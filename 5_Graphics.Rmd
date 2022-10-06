@@ -1,0 +1,1533 @@
+---
+title: "Untitled"
+authol: "Lidia Lopez"
+date: "2022-09-05"
+output: html_document
+---
+
+## Graphics change ratio simple models 
+
+```{r package.call, echo = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(readxl)
+library(naniar)
+library( Matrix)
+library(lme4)
+library(factoextra)
+library(parameters)
+library(merDeriv)
+library(visreg)
+library(performance)
+library(patchwork)
+library(see)
+library(lattice)
+library(hrbrthemes)
+
+
+```
+
+
+```{r}
+wing<-read.csv2(file= "wing.csv")
+
+wing$y <- as.numeric(wing$y)
+wing$up <- as.numeric(wing$up)
+wing$low <- as.numeric(wing$low)
+
+w<-ggplot(wing, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), 
+                   colour = c("darkolivegreen3", "darkgray","darkgray", "darkgray","darkgray","darkorange3","darkgray","darkgray","darkolivegreen3", "darkolivegreen3", "darkolivegreen3","darkolivegreen3", "darkgray", "darkgray"),
+            shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 1)+
+  ylim(-0.075,0.075)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+  coord_flip() +
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+  ggtitle("Wing length")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+  xlab('') +
+  ylab('mm /year')+
+   theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 20,  
+                             l = 20)) 
+
+
+```
+
+
+```{r}
+tarsus<-read.csv2(file= "tarsus.csv")
+
+tarsus$y <- as.numeric(tarsus$y)
+tarsus$up <- as.numeric(tarsus$up)
+tarsus$low <- as.numeric(tarsus$low)
+
+t<-ggplot(tarsus, aes(forcats::fct_rev(reorder(x,x)), y)) +        
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray", "darkgray","darkgray", "darkgray","darkgray","darkolivegreen3","darkgray","darkorange3", "darkolivegreen3", "darkorange3","darkolivegreen3","darkolivegreen3",  "darkgray", "darkorange3"),
+                    shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 1)+
+  ylim(-0.04,0.04)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("Tarsus length")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+   xlab('') +
+  ylab('mm /year')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 20,  
+                             l = 20)) 
+
+
+
+```
+
+```{r}
+weight<-read.csv2(file= "weight.csv")
+
+weight$y <- as.numeric(weight$y)
+weight$up <- as.numeric(weight$up)
+weight$low <- as.numeric(weight$low)
+
+we<-ggplot(weight, aes(forcats::fct_rev(reorder(x,x)), y)) +        
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkorange3", "darkgray","darkorange3", "darkgray","darkolivegreen3","darkolivegreen3","darkgray","darkgray", "darkgray", "darkorange3","darkolivegreen3","darkolivegreen3",  "darkgray", "darkgray"),
+                    shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 1)+
+  ylim(-0.075,0.075)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("Weight")+
+  theme( plot.title = element_text(face = "bold",               
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+ xlab('') +
+  ylab('gr /year')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 20,  
+                             l = 20)) 
+
+
+
+
+```
+
+With temperature:
+
+
+```{r}
+wingtmean<-read.csv2(file= "wing_tmean.csv")
+
+wingtmean$y <- as.numeric(wingtmean$y)
+wingtmean$up <- as.numeric(wingtmean$up)
+wingtmean$low <- as.numeric(wingtmean$low)
+
+
+
+wtmean<-ggplot(wingtmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray","darkgray","darkgray","darkgray","darkorange3", "darkgray","darkgray","darkgray","darkorange3","darkgray","darkgray","darkgray","darkgray","darkgray"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-0.75,0.75)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+ 
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+  coord_flip() +
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+  ggtitle("Wing length")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+  xlab('Mean temperature') +
+  ylab('')+
+  theme(axis.title.y = element_text (size= 14))+
+   theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  # Margen superior
+                             r = 20,  # Margen derecho
+                             b = 0,  # Margen inferior
+                             l = 20)) 
+
+
+```
+
+```{r}
+winglagtmean<-read.csv2(file= "wing_lagtemp.csv")
+
+winglagtmean$y <- as.numeric(winglagtmean$y)
+winglagtmean$up <- as.numeric(winglagtmean$up)
+winglagtmean$low <- as.numeric(winglagtmean$low)
+
+
+
+wlagtmean<-ggplot(winglagtmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray","darkgray","darkgray","darkorange3","darkgray", "darkgray","darkolivegreen3","darkgray","darkgray","darkgray","darkorange3","darkgray","darkgray","darkgray"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-0.75,0.75)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+  coord_flip() +
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+  ggtitle("")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+  xlab('Lagged mean temperature') +
+  ylab('mm /Cº')+
+  theme(axis.title.y = element_text (size= 14))+
+   theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 0,  
+                             r = 20,  
+                             b = 20,  
+                             l = 20)) 
+
+
+```
+
+
+
+```{r}
+tarsustmean<-read.csv2(file= "tarsus_tmean.csv")
+
+tarsustmean$y <- as.numeric(tarsustmean$y)
+tarsustmean$up <- as.numeric(tarsustmean$up)
+tarsustmean$low <- as.numeric(tarsustmean$low)
+
+ttmean<-ggplot(tarsustmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkorange3", "darkgray","darkorange3", "darkgray","darkgray","darkgray","darkgray","darkgray","darkorange3", "darkgray", "darkgray","darkgray", "darkolivegreen3", "darkgray"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-0.4,0.4)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("Tarsus length")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+   xlab('') +
+  ylab('')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 0, 
+                             l = 20)) 
+
+
+
+```
+
+```{r}
+tarsuslagtmean<-read.csv2(file= "tarsus_lagtemp.csv")
+
+tarsuslagtmean$y <- as.numeric(tarsuslagtmean$y)
+tarsuslagtmean$up <- as.numeric(tarsuslagtmean$up)
+tarsuslagtmean$low <- as.numeric(tarsuslagtmean$low)
+
+tlagtmean<-ggplot(tarsuslagtmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray", "darkgray","darkgray","darkgray", "darkgray","darkgray","darkgray","darkolivegreen3","darkgray","darkgray", "darkgray", "darkgray", "darkgray", "darkolivegreen3"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-0.4,0.4)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("")+
+  theme( plot.title = element_text(face = "bold",                
+                                  color = "black",                    
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+   xlab('') +
+  ylab('mm /Cº')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 0,  
+                             r = 20,  
+                             b = 20, 
+                             l = 20)) 
+
+
+
+```
+
+
+```{r}
+weighttmean<-read.csv2(file= "weight_tmean.csv")
+
+weighttmean$y <- as.numeric(weighttmean$y)
+weighttmean$up <- as.numeric(weighttmean$up)
+weighttmean$low <- as.numeric(weighttmean$low)
+
+wetmean<-ggplot(weighttmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray", "darkolivegreen3","darkorange3", "darkgray","darkorange3","darkgray","darkgray","darkgray", "darkgray", "darkgray","darkgray","darkgray",  "darkgray", "darkgray"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-1,1)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("Weight")+
+  theme( plot.title = element_text(face = "bold",                
+                                  color = "black",                  
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+ xlab('') +
+  ylab('')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 0, 
+                             l = 20)) 
+
+
+
+
+```
+
+
+```{r}
+weightlagtmean<-read.csv2(file= "weight_lagtemp.csv")
+
+weightlagtmean$y <- as.numeric(weightlagtmean$y)
+weightlagtmean$up <- as.numeric(weightlagtmean$up)
+weightlagtmean$low <- as.numeric(weightlagtmean$low)
+
+welagtmean<-ggplot(weightlagtmean, aes(forcats::fct_rev(reorder(x,x)), y)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_pointrange (aes(ymin = low, ymax = up), colour = c("darkgray", "darkgray","darkgray", "darkgray","darkolivegreen3","darkgray","darkgray","darkgray", "darkolivegreen3", "darkorange3","darkgray","darkgray",  "darkgray", "darkolivegreen3"),
+                   shape = c(16,16,17,16,17,17,16,16,17,16,17,17,16,17),
+            size = 0.75)+
+  ylim(-1.4,1.52)+
+  theme(axis.text = element_text(angle = 0, face= "italic"))+
+  geom_hline(yintercept=0, linetype="dashed", 
+                color = "azure4", size=0.5)+
+  theme(panel.grid = element_line(color = "grey93",
+                                  size = 0.5,
+                                  linetype = 1))+
+    theme(panel.background = element_rect(fill = "white"))+
+  theme(axis.text=element_text(size=13))+
+   labs(x = "Species" , y = "Rate of change")+
+   coord_flip() +
+  ggtitle("")+
+  theme( plot.title = element_text(face = "bold",                 
+                                  color = "black",                     
+                                  size = 14),
+         plot.title.position = "panel")+
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())+
+ xlab('') +
+  ylab('gr /Cº')+
+ theme(plot.title = element_text(hjust = 0.5))+
+theme(plot.margin = margin(t = 0,  # Margen superior
+                             r = 20,  # Margen derecho
+                             b = 20,  # Margen inferior
+                             l = 20)) 
+
+
+
+
+```
+
+Create the figure:
+
+```{r}
+ wtmean+ ttmean + wetmean + wlagtmean +  tlagtmean + welagtmean + plot_layout(ncol = 3)
+```
+
+
+
+## Graphics evolution of temperature in Doñana:
+
+
+```{r}
+
+clima<- read.csv2(file= "temp_reprod.csv")
+```
+
+
+```{r}
+
+clima$date <-as.Date(clima$years, format = "%Y/%m/%d")
+
+clima$tmean <- as.numeric(clima$tmean)
+
+clima$years <- c("1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020")
+clima$years <- as.Date(clima$years, "%Y")
+
+temp_graph<-ggplot(clima, aes(x = years, y = tmean, group = 1)) +
+  geom_smooth(stat = "identity", color = "darkorange2",  size=1) +
+  theme(axis.text = element_text(angle = 0))+
+ scale_x_date(name = "Years") +
+  geom_smooth(method=lm, se=FALSE, col= "gray29", size=1)+
+  theme(panel.background = element_rect(fill = "gray97"))+
+   scale_y_continuous(limits = c(14, 20), name = "Mean temperature (Cº)")+
+  #ggtitle("Mean temperature per year (1980-2022)")+
+  theme(plot.title.position = "plot")+
+  theme(axis.title = element_text(size = 14) , axis.text.y = element_text(size = 14), axis.text.x = element_text(size = 13))+
+   #theme(plot.title = element_text(family = "sans",size = 16))+
+   theme (plot.margin = margin(t = 20,  
+                             r = 20,  
+                             b = 20,  
+                             l = 20 )) 
+
+ggsave(temp_graph, file = "mean_temperature_Donana.tif", device = "tiff", dpi = 150, width = 50, height = 25, units = "cm")
+
+
+```
+
+## Graphics for all the mesures for every specie:
+
+
+Read the new CSV:
+
+```{r read_csv, warning= FALSE}
+
+final_data <- read_csv("final_data.csv") 
+
+```
+
+
+```{r select variables}
+
+final_data1<- final_data %>% select( Site, Ringer, Ring, Species, Age, Sex, Data_origin, Wing, Tail, Tarsus, Weight, Bill,Fat, Muscle, Year, Month, Age2)
+
+final_data1$Year <- as.numeric (final_data1$Year)
+
+```
+
+```{r update the name of Sylvia commmunis}
+final_data1 <- final_data1 %>% dplyr::mutate(Species = case_when (Species == "Sylvia communis" ~ "Curruca communis",
+                                                                      TRUE ~ Species))
+```
+
+
+```{r change.species.name}
+
+putLowerBar <- function(x) {
+  new_value <-paste(unlist(strsplit(x," ")),collapse="_")[1]
+  return(new_value)
+}
+
+final_data1$Species <- mapply(putLowerBar,final_data1$Species)
+
+sort(unique(final_data1$Species))
+
+for (Species in unique(final_data1$Species)) 
+  {assign(paste0("df_",Species),final_data1[final_data1$Species==Species,])
+}
+```
+
+Wing:
+
+```{r Wing plots}
+
+carcar<- mean(df_Carduelis_carduelis$Wing, na.rm= TRUE)
+
+p1 <- ggplot(df_Carduelis_carduelis, aes(x= Year, y= Wing)) +
+  geom_point(colour = "darkolivegreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("")+
+  ggtitle("Carduelis carduelis") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = carcar,
+             linetype = 2,
+             color = "black")
+
+
+chlchl<- mean(df_Chloris_chloris$Wing, na.rm= TRUE)
+
+p2 <- ggplot(df_Chloris_chloris, aes(x= Year, y= Wing)) +
+  geom_point(colour = "firebrick2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("")+
+  ggtitle("Chloris chloris") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = chlchl,
+             linetype = 2,
+             color = "black")
+ 
+curmel<- mean(df_Curruca_melanocephala$Wing, na.rm= TRUE)
+
+p3 <- ggplot(df_Curruca_melanocephala, aes(x= Year, y= Wing)) +
+  geom_point(colour = "steelblue2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Curruca melanocephala") +
+  theme( plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = curmel,
+             linetype = 2,
+             color = "black")
+
+
+erirub<- mean(df_Erithacus_rubecula$Wing, na.rm= TRUE)
+
+p4 <- ggplot(df_Erithacus_rubecula, aes(x= Year, y= Wing)) +
+  geom_point(colour = "darkorchid3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("") +
+  ggtitle("Erithacus rubecula") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = erirub,
+             linetype = 2,
+             color = "black")
+ 
+
+fichyp<- mean(df_Ficedula_hypoleuca$Wing, na.rm= TRUE)
+
+p5 <- ggplot(df_Ficedula_hypoleuca, aes(x= Year, y= Wing)) +
+  geom_point(colour = "deeppink3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("Wing length (mm)") +
+  ggtitle("Ficedula hypoleuca") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fichyp,
+             linetype = 2,
+             color = "black")
+
+fricoe<- mean(df_Fringilla_coelebs$Wing, na.rm= TRUE)
+
+p6 <- ggplot(df_Fringilla_coelebs, aes(x= Year, y= Wing)) +
+  geom_point(colour = "#EE8262", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("") +
+  ggtitle("Fringilla coelebs") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fricoe,
+             linetype = 2,
+             color = "black")
+ 
+parmaj<- mean(df_Parus_major$Wing, na.rm= TRUE)
+
+p7 <- ggplot(df_Parus_major, aes(x= Year, y= Wing)) +
+  geom_point(colour = "royalblue3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Parus major") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = parmaj,
+             linetype = 2,
+             color = "black")
+
+phy<- mean(df_Phylloscopus_collybita$Wing, na.rm= TRUE)
+
+p8 <- ggplot(df_Phylloscopus_collybita, aes(x= Year, y= Wing)) +
+  geom_point(colour = "gold2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Phylloscopus collybita") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0))+
+  geom_hline(yintercept = phy,
+             linetype = 2,
+             color = "black")
+
+serser<- mean(df_Serinus_serinus$Wing, na.rm= TRUE)
+
+p9 <- ggplot(df_Serinus_serinus, aes(x= Year, y= Wing)) +
+  geom_point(colour = "pink2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Serinus serinus") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = serser,
+             linetype = 2,
+             color = "black")
+
+sylatr<- mean(df_Sylvia_atricapilla$Wing, na.rm= TRUE)
+
+p10 <- ggplot(df_Sylvia_atricapilla, aes(x= Year, y= Wing)) +
+  geom_point(colour = "#EE7621", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Sylvia atricapilla") +
+   theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylatr,
+             linetype = 2,
+             color = "black")
+
+sylbor<- mean(df_Sylvia_borin$Wing, na.rm= TRUE)
+
+p11 <- ggplot(df_Sylvia_borin, aes(x= Year, y= Wing)) +
+  geom_point(colour = "darkseagreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Sylvia borin") +
+   theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylbor,
+             linetype = 2,
+             color = "black")
+
+
+sylcom<- mean(df_Curruca_communis$Wing, na.rm= TRUE)
+
+p12 <- ggplot(df_Curruca_communis, aes(x= Year, y= Wing)) +
+  geom_point(colour = "tomato3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+ xlab("")+
+  ggtitle("Curruca communis") +
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylcom,
+             linetype = 2,
+             color = "black")
+
+turmer<- mean(df_Turdus_merula$Wing, na.rm= TRUE)
+
+p13 <- ggplot(df_Turdus_merula, aes(x= Year, y= Wing)) +
+  geom_point(colour = "darkslategray3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+
+  ggtitle("Turdus merula") +
+  theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turmer,
+             linetype = 2,
+             color = "black")
+
+
+turphi<- mean(df_Turdus_philomelos$Wing, na.rm= TRUE)
+
+p14 <- ggplot(df_Turdus_philomelos, aes(x= Year, y= Wing)) +
+  geom_point(colour = "plum3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+xlab("")+
+   ggtitle("Turdus philomelos") +
+   theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turphi,
+             linetype = 2,
+             color = "black")
+
+#p1 + p2 + p12 +p3 + p4 + p5 + p6 + p7 + p8 + p9 + p10 + p11 +  p13 + p14 + plot_layout(ncol = 5)
+
+
+```
+ 
+ 
+
+Tarsus:
+
+```{r tarsus graphs}
+
+carcar<- mean(df_Carduelis_carduelis$Tarsus, na.rm= TRUE)
+
+q1 <- ggplot(df_Carduelis_carduelis, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "darkolivegreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("")+
+  ggtitle("Carduelis carduelis") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = carcar,
+             linetype = 2,
+             color = "black")
+
+
+chlchl<- mean(df_Chloris_chloris$Tarsus, na.rm= TRUE)
+
+q2 <- ggplot(df_Chloris_chloris, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "firebrick2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("")+
+  ggtitle("Chloris chloris") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = chlchl,
+             linetype = 2,
+             color = "black")
+ 
+curmel<- mean(df_Curruca_melanocephala$Tarsus, na.rm= TRUE)
+
+q3 <- ggplot(df_Curruca_melanocephala, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "steelblue2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Curruca melanocephala") +
+  theme( plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = curmel,
+             linetype = 2,
+             color = "black")
+
+
+erirub<- mean(df_Erithacus_rubecula$Tarsus, na.rm= TRUE)
+
+q4 <- ggplot(df_Erithacus_rubecula, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "darkorchid3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("") +
+  ggtitle("Erithacus rubecula") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = erirub,
+             linetype = 2,
+             color = "black")
+ 
+
+fichyp<- mean(df_Ficedula_hypoleuca$Tarsus, na.rm= TRUE)
+
+q5 <- ggplot(df_Ficedula_hypoleuca, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "deeppink3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab(" Tarsus length (mm)")+
+  ggtitle("Ficedula hypoleuca") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fichyp,
+             linetype = 2,
+             color = "black")
+
+fricoe<- mean(df_Fringilla_coelebs$Tarsus, na.rm= TRUE)
+
+q6 <- ggplot(df_Fringilla_coelebs, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "#EE8262", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("")+
+  ggtitle("Fringilla coelebs") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fricoe,
+             linetype = 2,
+             color = "black")
+ 
+parmaj<- mean(df_Parus_major$Tarsus, na.rm= TRUE)
+
+q7 <- ggplot(df_Parus_major, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "royalblue3", alpha = 0.2) +
+   ggtitle("Parus major")+
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab('')+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = parmaj,
+             linetype = 2,
+             color = "black")
+
+phy<- mean(df_Phylloscopus_collybita$Tarsus, na.rm= TRUE)
+
+q8 <- ggplot(df_Phylloscopus_collybita, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "gold2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Phylloscopus collybita") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0))+
+  geom_hline(yintercept = phy,
+             linetype = 2,
+             color = "black")
+
+serser<- mean(df_Serinus_serinus$Tarsus, na.rm= TRUE)
+
+q9 <- ggplot(df_Serinus_serinus, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "pink2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Serinus serinus") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+   theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = serser,
+             linetype = 2,
+             color = "black")
+
+sylatr<- mean(df_Sylvia_atricapilla$Tarsus, na.rm= TRUE)
+
+q10 <- ggplot(df_Sylvia_atricapilla, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "#EE7621", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Sylvia atricapilla") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylatr,
+             linetype = 2,
+             color = "black")
+
+sylbor<- mean(df_Sylvia_borin$Tarsus, na.rm= TRUE)
+
+q11 <- ggplot(df_Sylvia_borin, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "darkseagreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Sylvia borin") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+   theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylbor,
+             linetype = 2,
+             color = "black")
+
+
+sylcom<- mean(df_Curruca_communis$Tarsus, na.rm= TRUE)
+
+q12 <- ggplot(df_Curruca_communis, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "tomato3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+ xlab("")+
+  ggtitle("Curruca communis") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylcom,
+             linetype = 2,
+             color = "black")
+
+turmer<- mean(df_Turdus_merula$Tarsus, na.rm= TRUE)
+
+q13 <- ggplot(df_Turdus_merula, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "darkslategray3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('') + 
+  ggtitle("Turdus merula") +  
+  theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turmer,
+             linetype = 2,
+             color = "black")
+
+
+turphi<- mean(df_Turdus_philomelos$Tarsus, na.rm= TRUE)
+
+q14 <- ggplot(df_Turdus_philomelos, aes(x= Year, y= Tarsus)) +
+  geom_point(colour = "plum3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+ xlab("")+
+   ggtitle("Turdus philomelos") +
+   theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turphi,
+             linetype = 2,
+             color = "black")
+
+#q1 + q2 + q12 + q3  + q4 + q5 + q6 + q7 + q8 + q9 + q10 + q11 + q13 + q14 + plot_layout(ncol = 5)
+
+```
+ 
+ 
+Weight:
+
+```{r weight graphs}
+
+carcar<- mean(df_Carduelis_carduelis$Weight, na.rm= TRUE)
+
+w1 <- ggplot(df_Carduelis_carduelis, aes(x= Year, y= Weight)) +
+  geom_point(colour = "darkolivegreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("")+
+  ggtitle("Carduelis carduelis") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = carcar,
+             linetype = 2,
+             color = "black")
+
+
+chlchl<- mean(df_Chloris_chloris$Weight, na.rm= TRUE)
+
+w2 <- ggplot(df_Chloris_chloris, aes(x= Year, y= Weight)) +
+  geom_point(colour = "firebrick2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("")+
+  ggtitle("Chloris chloris") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = chlchl,
+             linetype = 2,
+             color = "black")
+ 
+curmel<- mean(df_Curruca_melanocephala$Weight, na.rm= TRUE)
+
+w3 <- ggplot(df_Curruca_melanocephala, aes(x= Year, y= Weight)) +
+  geom_point(colour = "steelblue2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Curruca melanocephala") +
+  theme( plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = curmel,
+             linetype = 2,
+             color = "black")
+
+
+erirub<- mean(df_Erithacus_rubecula$Weight, na.rm= TRUE)
+
+w4 <- ggplot(df_Erithacus_rubecula, aes(x= Year, y= Weight)) +
+  geom_point(colour = "darkorchid3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("") +
+  ggtitle("Erithacus rubecula") +
+  theme(plot.title=element_text( size = 11,  hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = erirub,
+             linetype = 2,
+             color = "black")
+ 
+
+fichyp<- mean(df_Ficedula_hypoleuca$Weight, na.rm= TRUE)
+
+w5 <- ggplot(df_Ficedula_hypoleuca, aes(x= Year, y= Weight)) +
+  geom_point(colour = "deeppink3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("Weight (gr)") +
+  ggtitle("Ficedula hypoleuca") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fichyp,
+             linetype = 2,
+             color = "black")
+
+fricoe<- mean(df_Fringilla_coelebs$Weight, na.rm= TRUE)
+
+w6 <- ggplot(df_Fringilla_coelebs, aes(x= Year, y= Weight)) +
+  geom_point(colour = "#EE8262", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE)+ xlab('')+ ylab("") +
+  ggtitle("Fringilla coelebs") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = fricoe,
+             linetype = 2,
+             color = "black")
+ 
+parmaj<- mean(df_Parus_major$Weight, na.rm= TRUE)
+
+w7 <- ggplot(df_Parus_major, aes(x= Year, y= Weight)) +
+  geom_point(colour = "royalblue3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Parus major") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = parmaj,
+             linetype = 2,
+             color = "black")
+
+phy<- mean(df_Phylloscopus_collybita$Weight, na.rm= TRUE)
+
+w8 <- ggplot(df_Phylloscopus_collybita, aes(x= Year, y= Weight)) +
+  geom_point(colour = "gold2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Phylloscopus collybita") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0))+
+  geom_hline(yintercept = phy,
+             linetype = 2,
+             color = "black")
+
+serser<- mean(df_Serinus_serinus$Weight, na.rm= TRUE)
+
+w9 <- ggplot(df_Serinus_serinus, aes(x= Year, y= Weight)) +
+  geom_point(colour = "pink2", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Serinus serinus") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = serser,
+             linetype = 2,
+             color = "black")
+
+sylatr<- mean(df_Sylvia_atricapilla$Weight, na.rm= TRUE)
+
+w10 <- ggplot(df_Sylvia_atricapilla, aes(x= Year, y= Weight)) +
+  geom_point(colour = "#EE7621", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") +
+  ggtitle("Sylvia atricapilla") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+  theme(axis.text.x = element_text( size = 11))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylatr,
+             linetype = 2,
+             color = "black")
+
+sylbor<- mean(df_Sylvia_borin$Weight, na.rm= TRUE)
+
+w11 <- ggplot(df_Sylvia_borin, aes(x= Year, y= Weight)) +
+  geom_point(colour = "darkseagreen3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + xlab('')+ ylab("") + xlab("")+
+  ggtitle("Sylvia borin") +
+  theme(axis.text.x = element_text( size = 11))+
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylbor,
+             linetype = 2,
+             color = "black")
+
+
+sylcom<- mean(df_Curruca_communis$Weight, na.rm= TRUE)
+
+w12 <- ggplot(df_Curruca_communis, aes(x= Year, y= Weight)) +
+  geom_point(colour = "tomato3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+ xlab("")+
+   theme (axis.text.x = element_blank(),
+         axis.ticks.x = element_blank())+
+  ggtitle("Curruca communis") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = sylcom,
+             linetype = 2,
+             color = "black")
+
+turmer<- mean(df_Turdus_merula$Weight, na.rm= TRUE)
+
+w13 <- ggplot(df_Turdus_merula, aes(x= Year, y= Weight)) +
+  geom_point(colour = "darkslategray3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('') +
+  theme(axis.text.x = element_text( size = 11))+
+  ggtitle("Turdus merula") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turmer,
+             linetype = 2,
+             color = "black")
+
+
+turphi<- mean(df_Turdus_philomelos$Weight, na.rm= TRUE)
+
+w14 <- ggplot(df_Turdus_philomelos, aes(x= Year, y= Weight)) +
+  geom_point(colour = "plum3", alpha = 0.2) +
+  geom_smooth(method= glm , color="gray29", fill="gray40", se=TRUE) + ylab('')+ xlab("")+
+   theme(axis.text.x = element_text( size = 11))+
+   ggtitle("Turdus philomelos") +
+  theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+ theme(plot.margin = margin(t = 0,  
+                             r = 0,  
+                             b = 0,  
+                             l = 0)) +
+  geom_hline(yintercept = turphi,
+             linetype = 2,
+             color = "black")
+
+
+
+```
+ 
+ 
+```{r}
+
+w1 + w2 + w12 + w3 + w4 + w5 + w6 + w7 + w8 + w9 + w10 + w11 +  w13 + w14 + plot_layout(ncol = 5)
+```
+ 
+# Density plots:
+
+```{r wing}
+
+r1<-ggplot(df_Carduelis_carduelis , aes(x=Wing)) +
+    geom_density(fill="darkolivegreen4", color="darkolivegreen4", alpha=0.8) +
+    ggtitle("Carduelis carduelis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r2<-ggplot(df_Chloris_chloris , aes(x=Wing)) +
+    geom_density(fill="firebrick2", color="firebrick2", alpha=0.8) +
+    ggtitle("Chloris chloris")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r3<-ggplot(df_Curruca_melanocephala , aes(x=Wing)) +
+    geom_density(fill="steelblue2", color="steelblue2", alpha=0.8) +
+    ggtitle("Curruca melanocephala")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r4<-ggplot(df_Erithacus_rubecula , aes(x=Wing)) +
+    geom_density(fill="darkorchid3", color="darkorchid3", alpha=0.8) +
+    ggtitle("Erithacus rubecula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r5<-ggplot(df_Ficedula_hypoleuca , aes(x=Wing)) +
+    geom_density(fill="deeppink3", color="deeppink3", alpha=0.8) +
+    ggtitle("Ficedula hypoleuca")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("Density")
+
+r6<-ggplot(df_Fringilla_coelebs , aes(x=Wing)) +
+    geom_density(fill="#EE8262", color="#EE8262", alpha=0.8) +
+    ggtitle("Fringilla coelebs")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('') + ylab("")
+
+r7<-ggplot(df_Parus_major , aes(x=Wing)) +
+    geom_density(fill="royalblue3", color="royalblue3", alpha=0.8) +
+    ggtitle("Parus major")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r8<-ggplot(df_Phylloscopus_collybita , aes(x=Wing)) +
+    geom_density(fill="gold2", color="gold2", alpha=0.8) +
+    ggtitle("Phylloscopus collybita")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r9<-ggplot(df_Serinus_serinus , aes(x=Wing)) +
+    geom_density(fill="pink2", color="pink2", alpha=0.8) +
+    ggtitle("Serinus serinus")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r10<-ggplot(df_Sylvia_atricapilla , aes(x=Wing)) +
+    geom_density(fill="#EE7621", color="#EE7621", alpha=0.8) +
+    ggtitle("Sylvia atricapilla")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r11<-ggplot(df_Sylvia_borin , aes(x=Wing)) +
+    geom_density(fill="darkseagreen3", color="darkseagreen3", alpha=0.8) +
+    ggtitle("Sylvia borin")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r12<-ggplot(df_Curruca_communis, aes(x=Wing)) +
+    geom_density(fill="tomato3", color="tomato3", alpha=0.8) +
+    ggtitle("Curruca communis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+r13<-ggplot(df_Turdus_merula, aes(x=Wing)) +
+    geom_density(fill="darkslategray3", color="darkslategray3", alpha=0.8) +
+    ggtitle("Turdus merula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('Wing length (mm)')+ ylab("") 
+
+r14<-ggplot(df_Turdus_philomelos, aes(x=Wing)) +
+    geom_density(fill="plum3", color="plum3", alpha=0.8) +
+    ggtitle("Turdus philomelos")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+#r1+r2+r12+r3+r4+r5+r6+r7+r8+r9+r10+r11+r13+r14+plot_layout(ncol =5)
+
+```
+
+
+```{r tarasus}
+
+b1<-ggplot(df_Carduelis_carduelis , aes(x=Tarsus)) +
+    geom_density(fill="darkolivegreen4", color="darkolivegreen4", alpha=0.8) +
+    ggtitle("Carduelis carduelis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b2<-ggplot(df_Chloris_chloris , aes(x=Tarsus)) +
+    geom_density(fill="firebrick2", color="firebrick2", alpha=0.8) +
+    ggtitle("Chloris chloris")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b3<-ggplot(df_Curruca_melanocephala , aes(x=Tarsus)) +
+    geom_density(fill="steelblue2", color="steelblue2", alpha=0.8) +
+    ggtitle("Curruca melanocephala")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b4<-ggplot(df_Erithacus_rubecula , aes(x=Tarsus)) +
+    geom_density(fill="darkorchid3", color="darkorchid3", alpha=0.8) +
+    ggtitle("Erithacus rubecula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b5<-ggplot(df_Ficedula_hypoleuca , aes(x=Tarsus)) +
+    geom_density(fill="deeppink3", color="deeppink3", alpha=0.8) +
+    ggtitle("Ficedula hypoleuca")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("Density") 
+
+b6<-ggplot(df_Fringilla_coelebs , aes(x=Tarsus)) +
+    geom_density(fill="#EE8262", color="#EE8262", alpha=0.8) +
+    ggtitle("Fringilla coelebs")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b7<-ggplot(df_Parus_major , aes(x=Tarsus)) +
+    geom_density(fill="royalblue3", color="royalblue3", alpha=0.8) +
+    ggtitle("Parus major")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b8<-ggplot(df_Phylloscopus_collybita , aes(x=Tarsus)) +
+    geom_density(fill="gold2", color="gold2", alpha=0.8) +
+    ggtitle("Phylloscopus collybita")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b9<-ggplot(df_Serinus_serinus , aes(x=Tarsus)) +
+    geom_density(fill="pink2", color="pink2", alpha=0.8) +
+    ggtitle("Serinus serinus")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b10<-ggplot(df_Sylvia_atricapilla , aes(x=Tarsus)) +
+    geom_density(fill="#EE7621", color="#EE7621", alpha=0.8) +
+    ggtitle("Sylvia atricapilla")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b11<-ggplot(df_Sylvia_borin , aes(x=Tarsus)) +
+    geom_density(fill="darkseagreen3", color="darkseagreen3", alpha=0.8) +
+    ggtitle("Sylvia borin")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b12<-ggplot(df_Curruca_communis, aes(x=Tarsus)) +
+    geom_density(fill="tomato3", color="tomato3", alpha=0.8) +
+    ggtitle("Curruca communis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+b13<-ggplot(df_Turdus_merula, aes(x=Tarsus)) +
+    geom_density(fill="darkslategray3", color="darkslategray3", alpha=0.8) +
+    ggtitle("Turdus merula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('Tarsus length (mm)')+ ylab("") 
+
+b14<-ggplot(df_Turdus_philomelos, aes(x=Tarsus)) +
+    geom_density(fill="plum3", color="plum3", alpha=0.8) +
+    ggtitle("Turdus philomelos")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+#b1+b2+b12+b3+b4+b5+b6+b7+b8+b9+b10+b11+ b13+b14+plot_layout(ncol =5)
+
+```
+
+
+```{r weight}
+
+l1<-ggplot(df_Carduelis_carduelis , aes(x=Weight)) +
+    geom_density(fill="darkolivegreen4", color="darkolivegreen4", alpha=0.8) +
+    ggtitle("Carduelis carduelis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l2<-ggplot(df_Chloris_chloris , aes(x=Weight)) +
+    geom_density(fill="firebrick2", color="firebrick2", alpha=0.8) +
+    ggtitle("Chloris chloris")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l3<-ggplot(df_Curruca_melanocephala , aes(x=Weight)) +
+    geom_density(fill="steelblue2", color="steelblue2", alpha=0.8) +
+    ggtitle("Curruca melanocephala")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l4<-ggplot(df_Erithacus_rubecula , aes(x=Weight)) +
+    geom_density(fill="darkorchid3", color="darkorchid3", alpha=0.8) +
+    ggtitle("Erithacus rubecula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l5<-ggplot(df_Ficedula_hypoleuca , aes(x=Weight)) +
+    geom_density(fill="deeppink3", color="deeppink3", alpha=0.8) +
+    ggtitle("Ficedula hypoleuca")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("Density") 
+
+l6<-ggplot(df_Fringilla_coelebs , aes(x=Weight)) +
+    geom_density(fill="#EE8262", color="#EE8262", alpha=0.8) +
+    ggtitle("Fringilla coelebs")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l7<-ggplot(df_Parus_major , aes(x=Weight)) +
+    geom_density(fill="royalblue3", color="royalblue3", alpha=0.8) +
+    ggtitle("Parus major")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l8<-ggplot(df_Phylloscopus_collybita , aes(x=Weight)) +
+    geom_density(fill="gold2", color="gold2", alpha=0.8) +
+    ggtitle("Phylloscopus collybita")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l9<-ggplot(df_Serinus_serinus , aes(x=Weight)) +
+    geom_density(fill="pink2", color="pink2", alpha=0.8) +
+    ggtitle("Serinus serinus")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l10<-ggplot(df_Sylvia_atricapilla , aes(x=Weight)) +
+    geom_density(fill="#EE7621", color="#EE7621", alpha=0.8) +
+    ggtitle("Sylvia atricapilla")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l11<-ggplot(df_Sylvia_borin , aes(x=Weight)) +
+    geom_density(fill="darkseagreen3", color="darkseagreen3", alpha=0.8) +
+    ggtitle("Sylvia borin")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l12<-ggplot(df_Curruca_communis, aes(x=Weight)) +
+    geom_density(fill="tomato3", color="tomato3", alpha=0.8) +
+    ggtitle("Curruca communis")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+l13<-ggplot(df_Turdus_merula, aes(x=Weight)) +
+    geom_density(fill="darkslategray3", color="darkslategray3", alpha=0.8) +
+    ggtitle("Turdus merula")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('Weight (gr)')+ ylab("") 
+
+l14<-ggplot(df_Turdus_philomelos, aes(x=Weight)) +
+    geom_density(fill="plum3", color="plum3", alpha=0.8) +
+    ggtitle("Turdus philomelos")+
+   theme(plot.title=element_text( size = 11, hjust=0.5, face='italic'))+
+    xlab('')+ ylab("") 
+
+#l1+l2+l12+l3+l4+l5+l6+l7+l8+l9+l10+l11+ l13+l14+plot_layout(ncol =5)
+
+```

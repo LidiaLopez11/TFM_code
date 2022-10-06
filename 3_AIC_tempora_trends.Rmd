@@ -1,0 +1,849 @@
+---
+title: "Untitled"
+author: "Lidia Lopez"
+date: "2022-09-05"
+output: html_document
+---
+
+## Packages and functions
+
+```{r package.call, echo = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(readxl)
+library(naniar)
+library( Matrix)
+library(lme4)
+library(factoextra)
+library(parameters)
+library(merDeriv)
+library(visreg)
+library(performance)
+library(see)
+
+```
+
+
+Read the new CSV:
+
+```{r read_csv, warning= FALSE}
+
+final_data <- read_csv("final_data.csv") 
+
+```
+
+
+
+Filter the interest variables for the models:
+
+```{r select variables}
+
+final_data1<- final_data %>% select( Site, Ringer, Ring, Species, Age, Sex, Data_origin, Wing, Tail, Tarsus, Weight, Bill,Fat, Muscle, Year, Month, Age2)
+
+```
+
+
+
+```{r as_factor}
+
+final_data1$Month<-as.factor(final_data1$Month)
+final_data1$Sex<-as.factor(final_data1$Sex)
+
+```
+
+```{r change.species.name}
+
+putLowerBar <- function(x) {
+  new_value <-paste(unlist(strsplit(x," ")),collapse="_")[1]
+  return(new_value)
+}
+
+final_data1$Species <- mapply(putLowerBar,final_data1$Species)
+
+sort(unique(final_data1$Species))
+
+for (Species in unique(final_data1$Species)) 
+  {assign(paste0("df_",Species),final_data1[final_data1$Species==Species,])
+}
+```
+
+##GLMM
+Sex models
+
+##Carduelis carduelis
+
+```{r wing_carcar}
+mod_wing_carcar<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Carduelis_carduelis)
+
+```
+
+```{r tarsus_carcar}
+
+mod_Tarsus_carcar<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Carduelis_carduelis)
+
+```
+
+
+```{r weight_carcar}
+
+mod_Weight_carcar<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Carduelis_carduelis)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_carcar2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Carduelis_carduelis)
+
+mod_wing_carcar3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Carduelis_carduelis)
+
+mod_wing_carcar4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Carduelis_carduelis)
+
+
+AIC(mod_wing_carcar,mod_wing_carcar2,mod_wing_carcar3,mod_wing_carcar4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_carcar2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Carduelis_carduelis)
+
+mod_tarsus_carcar3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Carduelis_carduelis)
+
+mod_tarsus_carcar4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Carduelis_carduelis)
+
+
+AIC(mod_Tarsus_carcar,mod_tarsus_carcar2,mod_tarsus_carcar3,mod_tarsus_carcar4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_carcar2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Carduelis_carduelis)
+
+AIC(mod_Weight_carcar,mod_Weight_carcar2)
+```
+
+
+##Chloris chloris
+
+```{r wing_chlchl}
+mod_wing_chlchl<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Chloris_chloris)
+
+```
+
+
+```{r tarsus_chlchl}
+
+mod_Tarsus_chlchl<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Chloris_chloris)
+
+```
+
+```{r weight_chlchl}
+
+mod_Weight_chlchl<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Chloris_chloris)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_chlchl2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Chloris_chloris)
+
+mod_wing_chlchl3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Chloris_chloris)
+
+mod_wing_chlchl4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Chloris_chloris)
+
+
+AIC(mod_wing_chlchl,mod_wing_chlchl2,mod_wing_chlchl3,mod_wing_chlchl4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_chlchl2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Chloris_chloris)
+
+mod_tarsus_chlchl3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Chloris_chloris)
+
+mod_tarsus_chlchl4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Chloris_chloris)
+
+
+AIC(mod_Tarsus_chlchl,mod_tarsus_chlchl2,mod_tarsus_chlchl3,mod_tarsus_chlchl4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_chlchl2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Chloris_chloris)
+
+AIC(mod_Weight_chlchl,mod_Weight_chlchl2)
+```
+
+
+##Curruca melanocephala
+
+
+```{r wing_curmel}
+mod_wing_curmel<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Curruca_melanocephala)
+
+```
+
+
+```{r tarsus_curmel}
+
+mod_Tarsus_curmel<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Curruca_melanocephala)
+
+```
+
+```{r weight_curmel}
+
+mod_Weight_curmel<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Curruca_melanocephala)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_curmel2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Curruca_melanocephala)
+
+mod_wing_curmel3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Curruca_melanocephala)
+
+mod_wing_curmel4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Curruca_melanocephala)
+
+
+AIC(mod_wing_curmel,mod_wing_curmel2,mod_wing_curmel3,mod_wing_curmel4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_curmel2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Curruca_melanocephala)
+
+mod_tarsus_curmel3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Curruca_melanocephala)
+
+mod_tarsus_curmel4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Curruca_melanocephala)
+
+
+AIC(mod_Tarsus_curmel,mod_tarsus_curmel2,mod_tarsus_curmel3,mod_tarsus_curmel4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_curmel2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Curruca_melanocephala)
+
+AIC(mod_Weight_curmel,mod_Weight_curmel2)
+```
+
+
+##Ficedula hypoleuca
+
+
+```{r wing_fichyp}
+mod_wing_fichyp<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Ficedula_hypoleuca)
+
+```
+
+
+```{r tarsus_fichyp}
+
+mod_Tarsus_fichyp<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Ficedula_hypoleuca)
+
+```
+
+
+
+```{r weight_fichyp}
+
+mod_Weight_fichyp<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Ficedula_hypoleuca)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_fichyp2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Ficedula_hypoleuca)
+
+mod_wing_fichyp3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Ficedula_hypoleuca)
+
+mod_wing_fichyp4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Ficedula_hypoleuca)
+
+
+AIC(mod_wing_fichyp,mod_wing_fichyp2,mod_wing_fichyp3,mod_wing_fichyp4)
+```
+
+
+```{r AIC comprobations}
+mod_tarsus_fichyp2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Ficedula_hypoleuca)
+
+mod_tarsus_fichyp3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Ficedula_hypoleuca)
+
+mod_tarsus_fichyp4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Ficedula_hypoleuca)
+
+
+AIC(mod_Tarsus_fichyp,mod_tarsus_fichyp2,mod_tarsus_fichyp3,mod_tarsus_fichyp4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_fichyp2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Ficedula_hypoleuca)
+
+AIC(mod_Weight_fichyp,mod_Weight_fichyp2)
+```
+
+
+##Fringilla coelebs:
+
+
+```{r wing_fricoe}
+mod_wing_fricoe<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Fringilla_coelebs)
+
+```
+
+
+
+```{r tarsus_fricoe}
+
+mod_Tarsus_fricoe<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Fringilla_coelebs)
+
+```
+
+
+```{r weight_fricoe}
+
+mod_Weight_fricoe<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Fringilla_coelebs)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_fricoe2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Fringilla_coelebs)
+
+mod_wing_fricoe3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Fringilla_coelebs)
+
+mod_wing_fricoe4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Fringilla_coelebs)
+
+
+AIC(mod_wing_fricoe,mod_wing_fricoe2,mod_wing_fricoe3,mod_wing_fricoe4)
+```
+
+
+```{r AIC comprobations}
+mod_tarsus_fricoe2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Fringilla_coelebs)
+
+mod_tarsus_fricoe3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Fringilla_coelebs)
+
+mod_tarsus_fricoe4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Fringilla_coelebs)
+
+
+AIC(mod_Tarsus_fricoe,mod_tarsus_fricoe2,mod_tarsus_fricoe3,mod_tarsus_fricoe4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_fricoe2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Fringilla_coelebs)
+
+AIC(mod_Weight_fricoe,mod_Weight_fricoe2)
+```
+
+##Parus major
+
+
+```{r wing_parmaj}
+mod_wing_parmaj<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Parus_major)
+
+
+```
+
+
+
+```{r tarsus_parmaj}
+
+mod_Tarsus_parmaj<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Parus_major)
+
+```
+
+```{r weight_parmaj}
+
+mod_Weight_parmaj<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Parus_major)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_parmaj2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Parus_major)
+
+mod_wing_parmaj3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Parus_major)
+
+mod_wing_parmaj4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Parus_major)
+
+
+AIC(mod_wing_parmaj,mod_wing_parmaj2,mod_wing_parmaj3,mod_wing_parmaj4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_parmaj2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Parus_major)
+
+mod_tarsus_parmaj3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Parus_major)
+
+mod_tarsus_parmaj4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Parus_major)
+
+
+AIC(mod_Tarsus_parmaj,mod_tarsus_parmaj2,mod_tarsus_parmaj3,mod_tarsus_parmaj4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_parmaj2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Parus_major)
+
+AIC(mod_Weight_parmaj,mod_Weight_parmaj2)
+```
+
+##Phylloscopus collybita
+
+```{r wing_phycol}
+mod_wing_phycol<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Phylloscopus_collybita)
+
+```
+
+
+```{r tarsus_phycol}
+
+mod_Tarsus_phycol<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Phylloscopus_collybita)
+
+```
+
+
+```{r weight_phycol}
+
+mod_Weight_phycol<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Phylloscopus_collybita)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_phycol2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Phylloscopus_collybita)
+
+mod_wing_phycol3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Phylloscopus_collybita)
+
+mod_wing_phycol4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Phylloscopus_collybita)
+
+
+AIC(mod_wing_phycol,mod_wing_phycol2,mod_wing_phycol3,mod_wing_phycol4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_phycol2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Phylloscopus_collybita)
+
+mod_tarsus_phycol3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Phylloscopus_collybita)
+
+mod_tarsus_phycol4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Phylloscopus_collybita)
+
+
+AIC(mod_Tarsus_phycol,mod_tarsus_phycol2,mod_tarsus_phycol3,mod_tarsus_phycol4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_phycol2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Phylloscopus_collybita)
+
+AIC(mod_Weight_phycol,mod_Weight_phycol2)
+```
+
+##Serinus serinus
+
+```{r wing_serser}
+mod_wing_serser<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Serinus_serinus)
+
+```
+
+
+```{r tarsus_serser}
+
+mod_Tarsus_serser<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Serinus_serinus)
+
+```
+
+
+```{r weight_serser}
+
+mod_Weight_serser<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Serinus_serinus)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_serser2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Serinus_serinus)
+
+mod_wing_serser3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Serinus_serinus)
+
+mod_wing_serser4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Serinus_serinus)
+
+
+AIC(mod_wing_serser,mod_wing_serser2,mod_wing_serser3,mod_wing_serser4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_serser2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Serinus_serinus)
+
+mod_tarsus_serser3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Serinus_serinus)
+
+mod_tarsus_serser4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Serinus_serinus)
+
+
+AIC(mod_Tarsus_serser,mod_tarsus_serser2,mod_tarsus_serser3,mod_tarsus_serser4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_serser2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Serinus_serinus)
+
+AIC(mod_Weight_serser,mod_Weight_serser2)
+```
+
+##Sylvia atricapilla
+
+```{r wing_sylatr}
+mod_wing_sylatr<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Sylvia_atricapilla)
+
+```
+
+
+```{r tarsus_sylatr}
+
+mod_Tarsus_sylatr<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Sylvia_atricapilla)
+
+```
+
+
+```{r weight_sylatr}
+
+mod_Weight_sylatr<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Sylvia_atricapilla)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_sylatr2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Sylvia_atricapilla)
+
+mod_wing_sylatr3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Sylvia_atricapilla)
+
+mod_wing_sylatr4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Sylvia_atricapilla)
+
+
+AIC(mod_wing_sylatr,mod_wing_sylatr2,mod_wing_sylatr3,mod_wing_sylatr4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_sylatr2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Sylvia_atricapilla)
+
+mod_tarsus_sylatr3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Sylvia_atricapilla)
+
+mod_tarsus_sylatr4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Sylvia_atricapilla)
+
+
+AIC(mod_Tarsus_sylatr,mod_tarsus_sylatr2,mod_tarsus_sylatr3,mod_tarsus_sylatr4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_sylatr2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Sylvia_atricapilla)
+
+AIC(mod_Weight_sylatr,mod_Weight_sylatr2)
+```
+
+
+
+##Sylvia communis
+
+```{r wing_sylcom}
+mod_wing_sylcom<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Sylvia_communis)
+
+```
+
+```{r tarsus_sylcom}
+
+mod_Tarsus_sylcom<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Sylvia_communis)
+
+```
+
+
+```{r weight_sylcom}
+
+mod_Weight_sylcom<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Sylvia_communis)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_sylcom2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Sylvia_communis)
+
+mod_wing_sylcom3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Sylvia_communis)
+
+mod_wing_sylcom4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Sylvia_communis)
+
+
+AIC(mod_wing_sylcom,mod_wing_sylcom2,mod_wing_sylcom3,mod_wing_sylcom4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_sylcom2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Sylvia_communis)
+
+mod_tarsus_sylcom3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Sylvia_communis)
+
+mod_tarsus_sylcom4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Sylvia_communis)
+
+
+AIC(mod_Tarsus_sylcom,mod_tarsus_sylcom2,mod_tarsus_sylcom3,mod_tarsus_sylcom4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_sylcom2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Sylvia_communis)
+
+AIC(mod_Weight_sylcom,mod_Weight_sylcom2)
+```
+
+
+
+##Turdus merula
+
+```{r wing_turmer}
+mod_wing_turmer<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer) + (1|Site), data= df_Turdus_merula)
+
+```
+
+
+```{r tarsus_turmer}
+
+mod_Tarsus_turmer<- lmer(formula = Tarsus ~ Year + Age2 + Sex +(1|Ringer) + (1|Site), data= df_Turdus_merula)
+
+```
+
+
+```{r weight_turmer}
+
+mod_Weight_turmer<- lmer(formula = Weight ~ Year + Age2 + Sex + Month  + (1|Site), data= df_Turdus_merula)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_turmer2<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Ringer), data= df_Turdus_merula)
+
+mod_wing_turmer3<- lmer(formula = Wing ~ Year + Age2 + Sex + Month + (1|Site), data= df_Turdus_merula)
+
+mod_wing_turmer4<- lm(formula = Wing ~ Year + Age2 + Sex + Month, data= df_Turdus_merula)
+
+
+AIC(mod_wing_turmer,mod_wing_turmer2,mod_wing_turmer3,mod_wing_turmer4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_turmer2<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Ringer), data= df_Turdus_merula)
+
+mod_tarsus_turmer3<- lmer(formula = Tarsus ~ Year + Age2 + Sex + (1|Site), data= df_Turdus_merula)
+
+mod_tarsus_turmer4<- lm(formula = Tarsus ~ Year + Age2 + Sex , data= df_Turdus_merula)
+
+
+AIC(mod_Tarsus_turmer,mod_tarsus_turmer2,mod_tarsus_turmer3,mod_tarsus_turmer4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_turmer2<- lm(formula = Weight ~ Year + Age2 + Sex+ Month, data= df_Turdus_merula)
+
+AIC(mod_Weight_turmer,mod_Weight_turmer2)
+```
+
+No sex models:
+
+##Erithacus rubecula
+
+```{r wing_erirub}
+mod_wing_erirub<- lmer(formula = Wing ~ Year + Age2 +  Month + (1|Ringer) + (1|Site), data= df_Erithacus_rubecula)
+
+```
+
+
+```{r tarsus_erirub}
+
+mod_Tarsus_erirub<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer) + (1|Site), data= df_Erithacus_rubecula)
+
+```
+
+
+```{r weight_erirub}
+
+mod_Weight_erirub<- lmer(formula = Weight ~ Year + Age2 + Month  + (1|Site), data= df_Erithacus_rubecula)
+
+```
+
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_erirub2<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Ringer), data= df_Erithacus_rubecula)
+
+mod_wing_erirub3<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Site), data= df_Erithacus_rubecula)
+
+mod_wing_erirub4<- lm(formula = Wing ~ Year + Age2 + Month, data= df_Erithacus_rubecula)
+
+
+AIC(mod_wing_erirub,mod_wing_erirub2,mod_wing_erirub3,mod_wing_erirub4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_erirub2<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer), data= df_Erithacus_rubecula)
+
+mod_tarsus_erirub3<- lmer(formula = Tarsus ~ Year + Age2 + (1|Site), data= df_Erithacus_rubecula)
+
+mod_tarsus_erirub4<- lm(formula = Tarsus ~ Year + Age2 , data= df_Erithacus_rubecula)
+
+
+AIC(mod_Tarsus_erirub,mod_tarsus_erirub2,mod_tarsus_erirub3,mod_tarsus_erirub4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_erirub2<- lm(formula = Weight ~ Year + Age2 + Month, data= df_Erithacus_rubecula)
+
+AIC(mod_Weight_erirub,mod_Weight_erirub2)
+```
+
+
+
+##Sylvia borin
+
+```{r wing_sylbor}
+mod_wing_sylbor<- lmer(formula = Wing ~ Year + Age2 +  Month + (1|Ringer) + (1|Site), data= df_Sylvia_borin)
+
+```
+
+
+```{r tarsus_sylbor}
+
+mod_Tarsus_sylbor<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer) + (1|Site), data= df_Sylvia_borin)
+
+```
+
+
+```{r weight_sylbor}
+
+mod_Weight_sylbor<- lmer(formula = Weight ~ Year + Age2 + Month  + (1|Site), data= df_Sylvia_borin)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_sylbor2<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Ringer), data= df_Sylvia_borin)
+
+mod_wing_sylbor3<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Site), data= df_Sylvia_borin)
+
+mod_wing_sylbor4<- lm(formula = Wing ~ Year + Age2 + Month, data= df_Sylvia_borin)
+
+
+AIC(mod_wing_sylbor,mod_wing_sylbor2,mod_wing_sylbor3,mod_wing_sylbor4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_sylbor2<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer), data= df_Sylvia_borin)
+
+mod_tarsus_sylbor3<- lmer(formula = Tarsus ~ Year + Age2 + (1|Site), data= df_Sylvia_borin)
+
+mod_tarsus_sylbor4<- lm(formula = Tarsus ~ Year + Age2 , data= df_Sylvia_borin)
+
+
+AIC(mod_Tarsus_sylbor,mod_tarsus_sylbor2,mod_tarsus_sylbor3,mod_tarsus_sylbor4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_sylbor2<- lm(formula = Weight ~ Year + Age2 + Month, data= df_Sylvia_borin)
+
+AIC(mod_Weight_sylbor,mod_Weight_sylbor2)
+```
+
+
+
+##Turdus philomelos
+
+```{r wing_turphi}
+mod_wing_turphi<- lmer(formula = Wing ~ Year + Age2 +  Month + (1|Ringer) + (1|Site), data= df_Turdus_philomelos)
+
+```
+
+
+```{r tarsus_turphi}
+
+mod_Tarsus_turphi<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer) + (1|Site), data= df_Turdus_philomelos)
+
+```
+
+
+```{r weight_turphi}
+
+mod_Weight_turphi<- lmer(formula = Weight ~ Year + Age2 + Month  + (1|Site), data= df_Turdus_philomelos)
+
+```
+
+AIC:
+
+```{r AIC comprobations}
+mod_wing_turphi2<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Ringer), data= df_Turdus_philomelos)
+
+mod_wing_turphi3<- lmer(formula = Wing ~ Year + Age2 + Month + (1|Site), data= df_Turdus_philomelos)
+
+mod_wing_turphi4<- lm(formula = Wing ~ Year + Age2 + Month, data= df_Turdus_philomelos)
+
+
+AIC(mod_wing_turphi,mod_wing_turphi2,mod_wing_turphi3,mod_wing_turphi4)
+```
+
+
+
+```{r AIC comprobations}
+mod_tarsus_turphi2<- lmer(formula = Tarsus ~ Year + Age2 + (1|Ringer), data= df_Turdus_philomelos)
+
+mod_tarsus_turphi3<- lmer(formula = Tarsus ~ Year + Age2 + (1|Site), data= df_Turdus_philomelos)
+
+mod_tarsus_turphi4<- lm(formula = Tarsus ~ Year + Age2 , data= df_Turdus_philomelos)
+
+
+AIC(mod_Tarsus_turphi,mod_tarsus_turphi2,mod_tarsus_turphi3,mod_tarsus_turphi4)
+```
+
+
+```{r AIC comprobations}
+mod_Weight_turphi2<- lm(formula = Weight ~ Year + Age2 + Month, data= df_Turdus_philomelos)
+
+AIC(mod_Weight_turphi,mod_Weight_turphi2)
+```
+

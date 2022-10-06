@@ -1,0 +1,1050 @@
+---
+title: "Final_dataset_cleaning"
+author: "Lidia Lopez"
+date: "2022-08-11"
+output: html_document
+---
+
+#######################################  IMPORTANT ####################################################################
+                      
+                        
+###### TO MAKE ANY CHANGES, THEY HAVE TO BE MADE FROM CHUNK 17 ONWARDS.
+
+## Packages and functions
+
+```{r package.call, echo = FALSE, warning = FALSE}
+
+library(tidyverse)
+library(readxl)
+library(naniar)
+library(mixdist)
+
+```
+
+
+##First we need to read the csv:
+
+```{r read_csv}
+
+original_data <- read_csv("unfiltered_final_data_morphometry_bird.csv")
+
+```
+
+We see the possible errors in every variables:
+
+```{r variable_comprobation}
+
+unique(original_data$Longitude)
+unique(original_data$Latitude) 
+unique(original_data$Site)
+unique(original_data$Sex)
+unique(original_data$Age)
+unique(original_data$Province) 
+unique(original_data$Fat)
+unique(original_data$Muscle)
+unique(original_data$Time)
+unique(original_data$Ringer)
+sort(unique(original_data$Species))
+
+```
+
+## Correct the sites:
+
+```{r Site_correction}
+original_data <- original_data %>% dplyr::mutate(Site = case_when (Site == '\"\"\"Camping \"\"\"\"Aguadulce\"\"\"\"\"\"\"' ~ "Camping Aguadulce",
+                                                   Site == '\"\"\"Centro de Interpretacion \"\"\"\"El Camaleon\"\"\"\"\"\"\"' ~ "Centro de Interpretacion El Camaleon",
+                                                   Site == '\"\"\"Parque \"\"\"\"Pio XII\"\"\"\"\"\"\"' ~ "Parque Pio XII",
+                                                   Site == "Aguadulce" ~ "Camping Aguadulce",
+                                                   Site == "Dehesa de las Yegüas" ~ "Dehesa de las Yeguas",
+                                                   Site == "El Pinar de la Alga<ed>da" ~ "El Pinar de la Algaida",
+                                                   Site == "La Algaida" ~ "El Pinar de la Algaida",
+                                                   Site == "LA JANDA" ~ "La Janda", 
+                                                   Site == "La Janda - Canal este compuerta" ~ "La Janda",
+                                                   Site == "Pinar de la Algaida" ~ "El Pinar de la Algaida",
+                                                   Site == "El Pinar de la Algaída" ~ "El Pinar de la Algaida",
+                                                   Site == "Camping \"Aguadulce\", Rota, Cádiz" ~"Camping Aguadulce",
+                                                   Site == "Camping \"Las Dunas\", Puerto de Santa María, Cádiz" ~ "Camping las Dunas",
+                                                   Site == "Centro de Interpretación \"El Camaleón\", Chipiona, Cádiz" ~ "Centro de Interpretacion El Camaleon",
+                                                   Site == "Palacio Duquesa Medina Sidonia, Sanlúcar de Barrameda, Cádiz" ~ "Palacio Duquesa Medina Sidonia",
+                                                   Site == "Parque \"Pio XII\", Jerez de la Frontera, Cádiz" ~ "Parque Pio XII",
+                                                   Site == "Pinar de la Algaida, Sanlúcar de Barrameda, Cádiz" ~ "El Pinar de la Algaida",
+                                                   Site == "Alcornocal de San Isidro, Gibraleón, Huelva" ~ "Alcornocal de San Isidro",
+                                                   Site == "ALMONTE" ~ "Almonte", 
+                                                   Site == "ARACENA" ~ "Aracena",
+                                                   Site == "ARROYO DE LA ROCINA" ~ "Arroyo de la Rocina",
+                                                   Site == "Bol<ed>n" ~ "Cercado del Boledon",
+                                                   Site == "BOLLULLOS PAR DEL CONDADO" ~ "Bollullos Par del Condado",
+                                                   Site == "BONARES" ~ "Bonares",
+                                                   Site == "Calatilla (Marismas del Odiel)" ~ "Calatilla",
+                                                   Site == "Casa de Juani, San Juan del Puerto, Huelva" ~ "Casa de Juani",
+                                                   Site == "Casa Juani-San Juan del Puerto" ~ "Casa de Juani",
+                                                   Site == "CASACAJENA-P. NAT. MARISMAS DEL ODIEL" ~ "Casacajena",
+                                                   Site == "Centro de Interpretación Calatilla, Huelva, Huelva" ~ "Calatilla",
+                                                   Site == "Centro de visitantes el Acebuche, Almonte, Huelva" ~"El Acebuche", 
+                                                   Site == "Cerca Bol<ed>n" ~ "Cercado del Boledon",
+                                                   Site == "Cercado de Bol<ed>n y F. del Duque" ~ "Cercado del Boledon",
+                                                   Site == "Cercado del Bol<ed>n" ~ "Cercado del Boledon",
+                                                   Site == "Control RBD" ~ "Control Reserva Biologica de Doñana",
+                                                   Site == "Control, Almonte, Huelva" ~ "Control Reserva Biologica de Doñana",
+                                                   Site == "Dehesa tras el cementerio, Beas, Huelva" ~ "Dehesa de Beas", 
+                                                   Site == "Beas" ~ "Dehesa de Beas",
+                                                   Site == "EL ACEBRON" ~ "El Acebron",
+                                                   Site == "El Bol<ed>n" ~ "Cercado del Boledon",
+                                                   Site == "Bolin" ~ "El Bolin",
+                                                   Site == "EL BOLÍN" ~ "El Bolin",
+                                                   Site == "EL POCITO, MARISMILLAS" ~ "El Pocito",
+                                                   Site == "El Rinc<f3>n" ~ "El Rincon",
+                                                   Site == "Óscar Gordo" ~ "El Rincon",
+                                                   Site == "El Rinc\xc3ordo" ~ "El Rincon", 
+                                                   Site == "El ia Lóp" ~ "El Rincon",
+                                                   Site == "Lidia López" ~ "El Rincon",
+                                                   Site == "El Rir Gor" ~ "El Rincon",
+                                                   Site == "EL ROCIO" ~ "El Rocio", 
+                                                   Site == "El Rocío" ~ "El Rocio",
+                                                   Site == "El Rocio, Almonte, Huelva" ~ "El Rocio",
+                                                   Site == "Escuela hípica Huelva, San Juan del Puerto, Huelva" ~ "Escuela Hipica Huelva",
+                                                   Site == "20.Ansgefalla Veger Reger" ~ "Vejer de la Frontera",
+                                                   Site == "El Rincón (F)" ~ "El Rincon",
+                                                   Site == "Finca del Rincón (Rocío)" ~ "El Rincon",
+                                                   Site == "El Puerco   Utrera" ~ "Arroyo El Puerco",
+                                                   Site == "ARROYO DEL AJOLÍ" ~ "Arroyo del Ajoli",
+                                                   Site == "Óscar Gor" ~ "El Rincon",
+                                                   Site == "Fuente del Duque y Huerto de Palacio de Do<f1>ana" ~ "Fuente del Duque",
+                                                   Site == "GALAROZA" ~ "Galaroza",
+                                                   Site == "ESTERO DE DOMINGO RUBIO" ~ "Estero de Domingo Rubio",
+                                                   Site == "Huerto del Bol<ed>n" ~ "Cercado del Boledon",
+                                                   Site == "L. Bol<ed>n y Palacio de Do<f1>ana" ~ "Laboratorio del Boledon",
+                                                   Site == "LA NAVA" ~ "La Nava",
+                                                   Site == "LA RABIDA" ~ "La Rabida",
+                                                   Site == "LAGUNA PRIMERA DE PALOS" ~ "Laguna Primera de Palos",
+                                                   Site == "LLANOS DE LA PLANCHA" ~ "Llanos de la Plancha",
+                                                   Site == "LOS MIMBRALES" ~ "Los Mimbrales",
+                                                   Site == "LUCENA DEL PUERTO"~ "Lucena del Puerto",
+                                                   Site == "Manecorro,P. Nac. de Doñana" ~ "Manecorro",
+                                                   Site == "El Bolín ringing station at 70's" ~ "El Bolin",
+                                                   Site == "marismas del polvorin" ~ "Marismas del Polvorin",
+                                                   Site == "NIEBLA" ~ "Niebla",
+                                                   Site == "P. NAT. MARISMAS DEL ODIEL" ~ "Marismas del Odiel",
+                                                   Site == "Palacio Do<f1>ana" ~ "Palacio de Doñana",
+                                                   Site == "PARQUE MORET" ~ "Parque Moret",
+                                                   Site == "Reserva Biol<f3>gica de Do<f1>ana" ~ "Reserva Biologica de Doñana",
+                                                   Site == "Restaurante \"El Olivo\", Beas, Huelva" ~ "Restaurante El Olivo",
+                                                   Site == "HINOJOS" ~ "Hinojos",
+                                                   Site == "Buitrago, Aznalcazar, Corredor Verde" ~ "Buitrago",
+                                                   Site == "CAÑADA DE LOS PAJAROS" ~ "Cañada de los Pajaros",
+                                                   Site == "DOS HERMANAS" ~ "Dos Hermanas",
+                                                   Site == "El Bolin, RBD" ~ "El Bolin",
+                                                   Site == "El Canario/Brazo del Este" ~ "El Canario",
+                                                   Site == "El Canario/Paso/Brazo del Este" ~ "El Canario",
+                                                   Site == "El Convento-Brazo del Esta" ~ "El Convento",
+                                                   Site == "El Convento-Brazo del Este" ~ "El Convento",
+                                                   Site == "EL CONVENTO-BRAZO DEL ESTE, LA PUEBLA DEL RIO" ~ "El Convento",
+                                                   Site == "El Convento/Brazo del Este" ~ "El Convento",
+                                                   Site == "EL LANTISCAL (Limite cultivos)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (Basurero)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (mi casa)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (palmital Remesal)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (Polvorin)" ~ "El Lantiscar",
+                                                   Site == "ENTRECAMINOS" ~ "Entrecaminos",
+                                                   Site == "Laboratorio Bol<ed>n" ~ "Laboratorio del Boledon",
+                                                   Site == "Fuente del Duque y Bol<ed>n" ~ "Fuente del Duque",
+                                                   Site == "Lucio Bol<ed>n Do<f1>ana"~ "Laboratorio del Boledon",
+                                                   Site == "Manecorro, P. Nac. de Doñana" ~ "Manecorro",
+                                                   Site == "El Bolío. Parque Nacional de Doñana" ~ "El Bolin",
+                                                   Site == "MARISMAS DEL ODIEL" ~ "Marismas del Odiel",
+                                                   Site == "Palacio de Doñana, Almonte, Huelva" ~ "Palacio de Doñana",
+                                                   Site == "ALGARIN" ~ "Algarin", 
+                                                   Site == "Buitrago, Aznalcázar" ~ "Buitrago",
+                                                   Site == "Bomba/Brazo del Este(2)" ~ "Bomba de Don Pedro",
+                                                   Site == "Casa Neves-P- Nat. de" ~ "Casa Neves",
+                                                   Site == "Casa Neves-P- Nat. de Doñana" ~ "Casa Neves",
+                                                   Site == "coto El Alhorin" ~ "Coto El Alhorin",
+                                                   Site ==  "CULTIVOS" ~ "?",
+                                                   Site == "CULTIVOS (Pradillo marmol)" ~ "?",
+                                                   Site == "el Canario/Brazo del Este" ~ "El Canario",
+                                                   Site == "el Canario/Colector/Brazo del Este" ~ "El Canario",
+                                                   Site == "El Convento- Brazo del Este" ~ "El Convento",
+                                                   Site == "El convento-Brazo del Este" ~ "El Convento",
+                                                   Site == "El Convento/Brazo del este" ~ "El Convento",
+                                                   Site == "EL LANTISCAR (Limite cultivos)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (Palmital Remesal)" ~ "El Lantiscar",
+                                                   Site == "EL LANTISCAR (Valla Polvorin)" ~ "El Lantiscar",
+                                                   Site == "Guadiamar - El Guijo - Olivar" ~ "Guadiamar - El Guijo",
+                                                   Site == "Hacienda El Italiano, Dos Hermanas" ~ "Hacienda el Italiano",
+                                                   Site == "LOMA DEL ACEBUCHAL" ~ "Loma del Acebuchal",
+                                                   Site == "Fuente del Duque y Palacio de Do<f1>ana" ~ "Fuente del Duque",
+                                                   Site == "IFAPA, Huelva, Huelva" ~ "IFAPA",
+                                                   Site == "Pinar de San Agust<ed>n" ~ "Pinar de San Agustín",
+                                                   Site == "Reserva Biologica de Donana" ~ "Reserva Biologica de Doñana",
+                                                   Site == "Salinas Aragonesas-P.Je. Nat. Marismas del Odiel" ~ "Salinas Aragonesas",
+                                                   Site == "Alamillo" ~ "El Alamillo",
+                                                   Site == "Caño Navarro/Brazo del Este" ~ "Caño Navarro",
+                                                   Site == "SIERRA CLARA" ~ "Sierra Clara",
+                                                   Site == "BUITRAGO" ~ "Buitrago",
+                                                   Site == "Caño Navarro ( maizal) .Cortijo" ~ "Caño Navarro",
+                                                   Site == "CAPITAN-BRAZO DEL ESTE" ~ "Capitan Brazo del Este",
+                                                   Site == "El Hornillo/tablas de arroz" ~ "El Hornillo",
+                                                   Site == "EL LANTISCAR" ~ "El Lantiscar",
+                                                   Site == "GUADAIRA" ~ "Guadaira",
+                                                   Site == "LANTISCAR" ~ "El Lantiscar",
+                                                   Site == "LORA" ~ "Rio Lora", 
+                                                   Site == "MATALLANA" ~ "Matallana",
+                                                   Site == "Parque el Alamillo" ~ "El Alamillo",
+                                                   Site == "PARQUE EL ALAMILLO" ~ "El Alamillo",
+                                                   Site == "Puebla del Río (parque urbano)" ~ "Parque Urbano, Puebla del Rio",
+                                                   Site == "Urbanización Entrecaminos" ~ "Entrecaminos",
+                                                   Site == "VIA TREN" ~ "Via Tren",
+                                                   Site == "Zaframagón" ~ "Zaframagon",
+                                                   Site == "Dehesa de las yeguas" ~ "Dehesa de las Yeguas",
+                                                   Site == "EL ACEBUCHE" ~ "El Acebuche",
+                                                   Site == "Domingo Rubio" ~ "Estero de Domingo Rubio",
+                                                   Site == "Manecorro. Parque Nacional de Doñana" ~ "Manecorro",
+                                                   Site == "P. Nat. Marismas del Odiel" ~ "Marismas del Odiel",
+                                                   Site == "CULTIVOS (Ca<f1>ada Marmol)" ~ "?",
+                                                   Site == "EL CONVENTO-BRAZO DEL ESTE"  ~ "El Convento",
+                                                   Site == "EL LANTISCAR (Mi casa)" ~ "El Lantiscar",
+                                                   Site == "Palomares, Sevilla" ~ "Palomares del Rio",
+                                                   Site == "Parque Alamillo" ~ "El Alamillo",
+                                                   Site == "Parque de María Luisa, Sevilla" ~ "Parque de Maria Luisa",
+                                                   Site == "Parque El Alamillo" ~ "El Alamillo",
+                                                   Site == "Puebla del Río" ~ "Puebla del Rio",
+                                                   Site == "Refugio las Serpientes" ~"Refugio de las serpientes",
+                                                   Site == "VETA LA PALMA" ~ "Veta la Palma",
+                                                   Site == "Vilanueva del Arisca" ~ "Villanueva del Ariscal",
+                                                   Site == "Ca<f1>o de Guadiamar" ~ "Rio Guadiamar",
+                                                   Site == "AP4- Km 92" ~ "AP4-Km 92",
+                                                   Site == "Arroyo Ardachón" ~ "Arroyo Ardachon",
+                                                   Site == "Arroyo Ardanchon" ~ "Arroyo Ardachon",
+                                                   Site == "Casas Viejas" ~ "Benalup-Casas Viejas",
+                                                   Site == "Encauzamiento/Bomba/Brazo del Este" ~ "Bomba/Brazo del Este",
+                                                   Site == "Sacatierra/Bomba de Pantomina/Brazo del Este" ~ "Bomba/Brazo del Este",
+                                                   Site == "Encauzamiento por Bomba de Pantomima" ~ "Bomba/Brazo del Este",
+                                                   Site == "Cañada de los Pájaros" ~ "Cañada de los Pajaros",
+                                                   Site == "Capitan Brazo del Este" ~ "Capitan/Brazo del Este",
+                                                   Site == "Casa de Laura, Palomares del Río, Sevilla" ~ "Casa de Laura, Palomares del Rio",
+                                                   Site == "Centro de Interpretación El Camaleon" ~ "Centro de Interpretacion El Camaleon",
+                                                   Site == "Charco redondo" ~ "Charco Redondo",
+                                                   Site == "Colector/Pinzon" ~ "?",
+                                                   Site == "Conde Conde Chico/Brazo del Este" ~ "Conde Chico/Brazo del Este",
+                                                   Site == "Coria del Río" ~ "Coria del Rio",
+                                                   Site == "Corta de la Cartuja, Río Guadalquivir, Sevilla" ~ "Corta de la Cartuja",
+                                                   Site == "Corta san Jeronimo" ~ "Corta de San Jeronimo",
+                                                   Site == "Don Rodrigo" ~ "Cortijo Don Rodrigo",
+                                                   Site == "Cortijo Orán" ~ "Cortijo Oran",
+                                                   Site == "El Hampa" ~ "La Hampa",
+                                                   Site == "EL Letrado/La Capitana" ~ "La Capitana, El Letrado",
+                                                   Site == "El Madrono" ~ "El Madroño",
+                                                   Site == "El pedregoso" ~ "El Pedregoso",
+                                                   Site == "El Rincón" ~ "El Rincon",
+                                                   Site == "El ventero-Rio Palmones" ~ "El Ventero-Rio Palmones",
+												   Site == "Encauzamiento por Capitán" ~ "Encauzamiento por Capitan",
+                                                   Site == "Estero Domingo Rubio" ~ "Estero de Domingo Rubio",
+                                                   Site == "Finca Las Víboras" ~ "Finca Las Viboras",
+                                                   Site == "Finca las viboras" ~ "Finca Las Viboras",
+                                                   Site == "Granja de los Padres de Carlos Moreno, Rota, Cádiz" ~ "Granja de los Padres de Carlos Moreno, Rota, Cadiz",
+                                                   Site == "Guadiamar - Cortijo de la Juncosa" ~ "Guadiamar-Cortijo de la Juncosa",
+                                                   Site == "Guadiamar - Arroyo de Valdarrago" ~ "Guadiamar-Arroyo de Valdarrago",
+                                                   Site == "Guadiamar - Cortijo de Chilla" ~ "Guadiamar-Cortijo de Chilla",
+                                                   Site == "Guadiamar - Cortijo del Quema" ~ "Guadiamar-Cortijo del Quema",
+                                                   Site == "Guadiamar - Cuestas de Palencia" ~ "Guadiamar-Cuestas de Palencia",
+                                                   Site == "Guadiamar - El Guijo" ~ "Guadiamar-El Guijo",
+                                                   Site == "Guadiamar - La Tiesa" ~ "Guadiamar-La Tiesa",
+                                                   Site == "Guadiamar - Las Candeleras" ~ "Guadiamar-Las Candeleras",
+                                                   Site == "Guadiamar - Los Ranchos" ~ "Guadiamar-Los Ranchos",
+                                                   Site == "Guadiamar - Torre de Guadiamar" ~ "Guadiamar-Torre de Guadiamar",
+                                                   Site == "Guadiamar - Vicario" ~ "Rio Guadiamar-Vicario",
+                                                   Site == "Hacienda Bertendona (Dos Hermanas)" ~ "Hacienda Bertendona, Dos Hermanas",
+                                                   Site == "Hacienda el Italiano" ~ "Hacienda El Italiano",
+                                                   Site == "Balastreras" ~ "Humedal Balastreras",
+                                                   Site == "Humedal Graveras de las Balastreras, Niebla, Huelva" ~ "Humedal Balastreras",
+                                                   Site == "Parque de la Corchuela" ~ "La Corchuela",
+                                                   Site == "Lantejuela" ~ "La Lantejuela",
+                                                   Site == "LA PUEBLA DEL RIO" ~ "La Puebla del Rio",
+                                                   Site == "Las Alcantaras. Los Palacios" ~ "Las Alcantaras, Los Palacios",
+                                                   Site == "Mezquetillas" ~ "Las Mezquetillas",
+                                                   Site == "Los Palacios" ~ "Los Palacios Y Villafranca",
+                                                   Site == "Margazuela chica" ~ "Margazuela Chica/Brazo del Este",
+                                                   Site == "Marismas de Odiel" ~ "Marismas del Odiel",
+                                                   Site == "Palomares del Río" ~ "Palomares del Rio",
+                                                   Site == "Embalse de la Torre del Aguila" ~ "Pantano de la Torre del Aguila",
+                                                   Site == "Penaflor" ~ "Peñaflor",
+                                                   Site == "Pinar de San Agustín" ~ "Pinar de San Agustin",
+                                                   Site == "Campo Soto" ~ "Playa de Camposoto",
+                                                   Site == "Rancho Bajo ( maizal)" ~ "Rancho Bajo (maizal)",
+                                                   Site == "Red gallinero" ~ "?",
+                                                   Site == "Red higuera" ~ "?",
+                                                   Site == "Refugio de las serpientes" ~ "Refugio de las Serpientes",
+                                                   Site == "El Refugio de la Serpiente" ~ "Refugio de las Serpientes",
+                                                   Site == "Rio Genal   Juzcar" ~ "Rio Genal, Juzcar",
+                                                   Site == "Río Guadaira" ~ "Rio Guadaira",
+                                                   Site == "Guadaira" ~ "Rio Guadaira",
+                                                   Site == "Guadiamar" ~ "Rio Guadiamar",
+                                                   Site == "Sede Los Álamos Diputación de Huelva, Huelva, Huelva" ~ "Sede Los Alamos Diputacion de Huelva",
+                                                   Site == "Trajano" ~ "Trajano, Utrera",
+                                                   Site == "Tras las Casas" ~ "?",
+                                                   Site == "Tres Cancelas Brazo del Este" ~ "Tres Cancelas/Brazo del Este",
+                                                   Site == "Urbanización El Torreón" ~ "Urbanizacion El Torreon",
+                                                   Site == "Utrera, Trajano" ~ "Trajano, Utrera",
+                                                   Site == "Vereda los palos" ~ "Vereda Los Palos",
+                                                   Site == "Veta Cerrada   Las Cabezas de San Juan" ~ "Cortijo Veta Cerrada, Las Cabezas de San Juan",
+                                                   Site == "Veta Cerrada Las Cabezas de San Juan" ~ "Cortijo Veta Cerrada, Las Cabezas de San Juan",
+                                                   Site == "Veta La Palma" ~ "Veta la Palma",
+                                                   Site == "Via Tren" ~ "?",
+                                                   Site == "Vilanueva del Ariscal" ~ "Villanueva del Ariscal",
+                                                   Site == "Vivero" ~ "?", Site ==  "Bollullos Par del Condado" ~ "Bollullos par del Condado",
+Site == "Bomba/Brazo del Este" ~ "Brazo del Este",
+Site == "Capitan Brazo del Este" ~ "Brazo del Este",
+Site == "Capitan-Brazo del Este" ~ "Brazo del Este",
+Site == "Conde Chico/Brazo del Este" ~ "Brazo del Este",
+Site ==  "Guadiamar - El Guijo" ~ "Guadiamar-El Guijo",
+Site ==  "Hacienda El Italiano" ~ "Hacienda el Italiano",
+Site == "Refugio de las Serpientes" ~ "Refugio de las serpientes",
+Site == "Rio Guadiamar-Vicario" ~ "Guadiamar-Vicario",
+Site == "Rio Guadiamar" ~ "Guadiamar",
+Site == "EL BOL<cd>N" ~ "El Bolin",
+
+                                                   TRUE ~ Site))
+
+```
+
+Filter by sites:
+
+```{r site.filtering}
+
+sort(unique(original_data$Site))
+
+#We remove the sites that do not fulfill the criteria of 100 km around Doñana with a similar vegetation type
+
+remove.sites <- c("Grazalema", "Alajar",  "Alcala de los Gazules", "Algeciras", "Almaden de la Plata", "Aracena",  "Aroche",   "Benalup-Casas Viejas",  "Buitrago", "Cazalla de la Sierra", "Constantina", "Fuenteheridos", "Galaroza", "Linares de la Sierra", "Medina Sidonia", "Montejaque", "Pruna" )
+
+original_data <- original_data %>% filter(!Site %in% remove.sites)
+
+sort(unique(original_data$Site))
+
+```
+
+
+## Correct the Sex:
+
+```{r Sex_correction}
+
+original_data <- original_data %>% dplyr::mutate(Sex = case_when (Sex =="U" ~ "0",
+                                                   Sex == "M" ~ "1",
+                                                   Sex == "F" ~ "2",
+                                                   Sex == "4" ~ "0",
+                                                   Sex == "1?" ~ "0",
+                                                   Sex == "2?" ~ "0",
+                                                   TRUE ~ Sex))
+
+```
+
+## Correct the Age:
+
+```{r Age_correction}
+
+original_data <- original_data %>% dplyr::mutate(Age = case_when (
+                                                   Age == -4 ~ 4,
+                                                   Age == 7 ~ 0,
+                                                   Age == 8 ~ 0,
+                                                   Age == 9 ~ 0,
+                                                   TRUE ~ Age))
+
+```
+
+## Correct the Province:
+
+```{r Province_Correction}
+
+original_data <- original_data %>% dplyr::mutate(Province = case_when (Province =="Cadíz" ~ "Cadiz",
+                                                   Province == "Cádiz" ~ "Cadiz",
+                                                   Province == "HUELVA" ~ "Huelva",
+                                                   Province == "Málaga" ~ "Malaga",
+                                                   Province == "SEVILLA" ~ "Sevilla",
+                                                   Province == "Sevilla?" ~ "Sevilla",
+                                                   Province == "Sevilla y Huelva" ~ "Sevilla",
+                                                   Province == "Bollullos de la Mitaci<f3>n" ~ "Huelva",
+                                                   Province == "Aznalc<e1>zar" ~ "Sevilla",
+                                                   Province == "Benacaz<f3>n" ~ "Sevilla",
+                                                   Province == "BOLLULLOS DE LA MITACI<d3>N" ~ "Huelva",
+                                                   Province == "Hu<e9>var del Aljarafe" ~ "Sevilla",
+                                                   Province == "Sanl<fa>car la Mayor" ~ "Sevilla",
+                                                   TRUE ~ Province)) %>% 
+                                                   replace_with_na(replace = list(Province = "?"))
+
+original_data <- filter(original_data, Province != "Huesca" & Province != "Malaga" & Province != "Jaen")
+
+
+sort(unique(original_data$Province))
+
+```
+
+## Correct the Ringer List: 
+
+```{r Ringer_correction}
+
+original_data <- original_data %>% dplyr::mutate(Ringer = case_when (Ringer == "CIGÜEÑA NEGRA-Oficina de Especies Migratorias" ~ "Cigüeña Negra-Oficina de Especies Migratorias", 
+                                                                     Ringer == "Cigüeña negra -Oficina de Especies Migratorias" ~ "Cigüeña Negra-Oficina de Especies Migratorias", 
+                                                                     Ringer == "Est. Ornit. Anastasio Serna-Oficina de Especies Migratorias" ~ "Est.Ornit.Anastasio Serna-Oficina de Especies Migratorias",
+                                                                     Ringer == "Est. Ornit. Anastasio Serna-Oficna de Especies Migratorias" ~ "Est.Ornit.Anastasio Serna-Oficina de Especies Migratorias",
+                                                                     Ringer == "Est.Ornit. Anastasio Serna-Oficina de Especies Migratorias" ~ "Est.Ornit.Anastasio Serna-Oficina de Especies Migratorias",
+                                                                     Ringer == "F.Ib<e1><f1>ez" ~ "Fernando Ibañez",
+                                                                     Ringer == "F.Rillo,S.Ram<ed>rez,F.Ib<e1><f1>ez" ~ "Fernando Ibañez",
+                                                                     Ringer == "Fco.Parre<f1>o" ~ "Fco. Parreño",
+                                                                     Ringer == "FCo.Parre<f1>o" ~ "Fco. Parreño",
+                                                                     Ringer == "GOSUR" ~ "GOSUR",
+                                                                     Ringer == "GOSUR- Oficina de Especies Migratorias" ~ "GOSUR",
+                                                                     Ringer == "Gosur-Oficina de Especies Migratorias"  ~ "GOSUR",
+                                                                     Ringer == "GOSUR-Oficina de Especies Migratorias" ~ "GOSUR",
+                                                                     Ringer == "Gosur-Oficna de Especies Migratorias" ~ "GOSUR",
+                                                                     Ringer == "Grupo de Anillamiento Migres-Oficina de Especies Migratorias" ~ "Grupo de Anillamiento Migres",
+                                                                     Ringer == "Grupo de Anillamiento Migres-Oficna de Especies Migratorias" ~ "Grupo de Anillamiento Migres",
+                                                                     Ringer == "Luis Garc<ed>a" ~ "Luis Garcia",
+                                                                     Ringer == "MILVUS-GOES, Oficina de Especies Migratorias" ~ "MILVUS-GOES-Oficina de Especies Migratorias",
+                                                                     Ringer == "Particular web-Oficina de Especies Migratorias" ~ "Particular-Oficina de Especies Migratorias",
+                                                                     Ringer == "S.Ram<ed>rez" ~ "S.Ramirez",
+                                                                     TRUE ~ Ringer ))
+
+sort(unique(original_data$Ringer))
+                                                                       
+```
+
+## Correct Fat:
+
+```{r Fat_correction}
+
+original_data <- original_data %>% dplyr::mutate(Fat = case_when (Fat == "1,5" ~ "2",
+                                                                  Fat == "3,5" ~ "4",
+                                                                  Fat == "4,5" ~ "5",
+                                                                  Fat == "2,5" ~ "3",
+                                                                  Fat == "M" ~ "?",
+                                                                  Fat == "H" ~ "?",
+                                                                  Fat == "1+" ~ "1",
+                                                                  Fat == "3+" ~ "3",
+                                                                  Fat == "2+" ~ "2",
+                                                                  Fat == "57" ~ "?",
+                                                                  Fat == "59" ~ "?",
+                                                                  Fat == "13" ~ "?",
+                                                                  Fat == "0(1)" ~ "0",
+                                                                  Fat == "1(2)" ~ "1",
+                                                                  Fat == "4+" ~ "4",
+                                                                  Fat == "0,5" ~ "1",
+                                                                  Fat == "2.5" ~ "3",
+                                                                  Fat == "1.5" ~ "2",
+                                                                  Fat == "32" ~ "?",
+                                                                  Fat == "45" ~ "?",
+                                                                  Fat == "25" ~ "?",
+                                                                  Fat == "15" ~ "?",
+                                                                  Fat == "35" ~ "?",
+                                                                  Fat== "9" ~ "8",
+                                                                  TRUE ~ Fat)) %>% 
+                                                   replace_with_na(replace = list(Fat = "?")) %>% mutate(Fat= as.numeric(Fat))
+
+sort(unique(original_data$Fat))
+
+```
+
+## Correct Muscle:
+
+```{r Muscle_correction}
+
+original_data$Muscle <- as.character(original_data$Muscle)
+
+original_data <- original_data %>% dplyr::mutate(Muscle = case_when (Muscle == "2.0" ~ "2",
+                                                                     Muscle == "3.0" ~ "3",
+                                                                     Muscle == "1.0" ~ "1",
+                                                                     Muscle == "0.0" ~ "0",
+                                                                     Muscle == "9.0" ~ "?",
+                                                                     Muscle == "5.0" ~ "?",
+                                                                     Muscle == "4.0" ~ "?",
+                                                                     Muscle == "19.3" ~ "?",
+                                                                     Muscle == "56.0" ~ "?",
+                                                                     Muscle == "14.1" ~ "?",
+                                                                     Muscle == "13.9" ~ "?",
+                                                                     Muscle == "6.0" ~ "?",
+                                                                     Muscle == "2.5" ~ "?",
+                                                                     Muscle == "1.5" ~ "2",
+                                                                     Muscle == "2.3" ~ "?",
+                                                                     Muscle == "56" ~ "?", 
+                                                                     Muscle == "6" ~ "?",
+                                                                     Muscle == "5" ~ "?",
+                                                                     Muscle == "4" ~ "?",
+                                                                     Muscle == "9" ~ "?",
+                                                                     TRUE ~ Muscle
+                                                                     ))%>% 
+                                                   replace_with_na(replace = list(Muscle = "?")) %>% mutate(Muscle = as.numeric (Muscle))
+
+sort(unique(original_data$Muscle))
+
+
+```
+
+
+## Species correction
+
+```{r species_correction}
+
+original_data <- original_data %>% dplyr::mutate(Species = case_when (Species == "Linaria cannabina" ~ "Carduelis cannabina",
+                                                                      Species == "Sylvia melanocephala" ~ "Curruca melanocephala",
+                                                                      TRUE ~ Species))
+sort(unique(original_data$Species))
+
+```
+
+## Ring correction:
+
+```{r Ring_correction}
+
+original_data <- original_data %>% dplyr::mutate(Ring = case_when (Ring == "4045343 Museum Paris" ~ "4045343",
+                                                                      Ring == "TA84159 N. Museum Praha" ~ "TA84159",
+                                                                      Ring == "6L.Sylvia atricapilla" ~ "6L.12776",
+                                                                      TRUE ~ Ring))
+
+
+
+```
+
+## Write a CSV :
+
+
+```{r create final csv}
+
+
+write_excel_csv(original_data, file = "filtered_final_data_morphometry_bird.csv") 
+
+```
+
+##We change comma to point in Excel !! Now the csv is "good_filtered_final_data_morphometry_bird.csv":
+
+Read the new CSV:
+
+```{r read_csv, warning= FALSE}
+
+ original_data1 <- read_csv2("good_filtered_final_data_morphometry_bird.csv") ## cuando cargamos el csv le quita los decimales a las coordenadas.
+
+```
+
+## Extract the month:
+
+```{r}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Date = lubridate::dmy(Date)) %>% mutate(Date = format(Date, "%Y/%m/%d"))
+
+original_data1 <- original_data1 %>% mutate(Month = as.factor (lubridate::month(lubridate::ymd(Date))))
+
+original_data1 <- original_data1 %>% mutate(Year = as.factor (lubridate::year(lubridate::ymd(Date))))
+
+
+```
+
+
+Filter and correct the last Sites:
+
+```{r Site correction, warning= FALSE}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Site = case_when (Site == "Urbanizaci<f3>n Entrecaminos" ~	"Urbanizacion Entrecaminos",
+                                                                   (Site == "Dos Hermanas")&(Longitude == -5974444 )& (Latitude ==37311944 ) ~ "Laguna Fuente del Rey",
+                                                                   Site == "El Rincór"~ "El Rincon",
+                                                                   Site == "Bollullos par del Condado" ~ "Bollullos Par del Condado",
+                                                                   TRUE ~ Site ))
+
+# Filter  the Sites of interest:
+
+Sites <- read.csv("Site_list.csv")
+Sites <- as.vector(Sites$Site)
+
+original_data1 <- original_data1 %>% filter(Site %in% Sites )
+
+
+```
+
+Recodificate age and Sex, the Sex 0 = unknow will pass to be NA, and  we reclasificate age in juveniles and Adults:
+
+```{r Sex and age recodification, warning=FALSE}
+
+unique(original_data1$Age)
+
+original_data1 <- original_data1 %>% dplyr::mutate(Age2 = case_when (Age == "3" ~	"J",
+                                                                   Age == "5" ~	"J",
+                                                                   Age == "4" ~	"A",
+                                                                   Age == "6" ~	"A"))
+unique(original_data1$Age2)
+                                                            
+                                                                                                                       original_data1 <- original_data1 %>% replace_with_na(replace = list(Sex = "0")) 
+
+unique(original_data1$Sex)                                                                                                                                                                                          
+```
+
+Now we need to filter the columns that don't have values of Wing, tarsus and Weight (the 3 variables at the same time):
+
+```{r filter the missing values}
+
+original_data1 <- original_data1 %>% filter(!is.na(Weight) | !is.na(Tarsus) | !is.na(Wing))
+
+```
+
+Filter by species of interest after see the n total:
+
+```{r}
+
+species_list<- c("Sylvia atricapilla", "Phylloscopus collybita", "Sylvia borin", "Erithacus rubecula" , "Chloris chloris" , "Ficedula hypoleuca", "Carduelis carduelis" , "Turdus merula", "Curruca melanocephala" , "Turdus philomelos", "Sylvia communis", "Parus major", "Cettia cetti", "Serinus serinus", "Fringilla coelebs")
+
+original_data1 <- original_data1 %>% filter(Species %in% species_list )
+
+unique(original_data1$Species)
+
+```
+
+## Delete the outliers
+Delete the rings that are duplicated and with more than one specie because it is incorrect data that we cannot verify:
+
+```{r delete erroneos duplicated ring, warning=FALSE}
+
+duplicated_ring <- c("198123","198492","402010","573304","573534","665665","2041336","2177481","2291042","2291048","2291598","2291818","2291837","2291890","2360330","2564725","1Y92979","BU5840","BU5843","CJ1533","dead","J61010","J71069","J71080","JJ2310","JJ2631","K68392","L769659","L851384","M49811","M37726","M5551","M6333","M68671","M7305","n17253","n17254","NA","noring","p63989","scaped","Y9423","Y9424", "Y9425")
+
+
+
+original_data1 <- original_data1 %>% filter(!Ring %in% duplicated_ring)
+
+```
+
+And recodificate the rings that have  the both Sex for the same ring:
+
+```{r Sex for duplicated rings, warning= FALSE}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Sex = case_when (
+              Ring == "28471" ~ 2,
+                Ring == "45721" ~ 2,
+                Ring == "45732" ~ 2,
+                Ring == "45753" ~ 1,
+                Ring == "45763" ~ 2,
+                Ring == "125910" ~ 1,
+                Ring == "197395" ~ 1,
+                Ring == "198184" ~ 2,
+                Ring == "198424" ~ 2,
+                Ring == "2005635" ~ 2,
+                Ring == "2005652" ~ 2,
+                Ring == "2038469" ~ 1,
+                Ring == "2041208" ~ 2,
+                Ring == "2041215" ~ 1,
+                Ring == "2041238" ~ 2,
+                Ring == "2047820" ~ 1,
+                Ring == "2258801" ~ 1,
+                Ring == "2291430" ~ 1,
+                Ring == "2291486" ~ 2,
+                Ring == "2291774" ~ 1,
+                Ring == "2291831" ~ 2,
+                Ring == "2291904" ~ 2,
+                Ring == "2291912" ~ 2,
+                Ring == "2292014" ~ 1,
+                Ring == "2292057" ~ 2,
+                Ring == "2292076" ~ 1,
+                Ring == "2292194" ~ 1,
+                Ring == "2333151" ~ NA_real_,
+                Ring == "3004498" ~ 2,
+                Ring == "3037379" ~ 2,
+                Ring == "3037380" ~ 2,
+                Ring == "3039888" ~ 1,
+                Ring == "3050207" ~ 2,
+                Ring == "3064964" ~ 2,
+                Ring == "3087776" ~ 2,
+                Ring == "3158729" ~ NA_real_,
+                Ring == "3158743" ~ 1,
+                Ring == "3158765" ~ 2,
+                Ring == "3158767" ~ 1,
+                Ring == "3284034" ~ 1,
+                Ring == "3301859" ~ 2,
+                Ring == "5744761" ~ 2,
+                Ring == "1B...52502" ~ 2,
+                Ring == "1B...52505" ~ 1,
+                Ring == "1B...52512" ~ 1,
+                Ring == "1B...52522" ~ 1,
+                Ring == "1B...52529" ~ NA_real_,
+                Ring == "1B...52543" ~ 1,
+                Ring == "1B28366" ~ 2,
+                Ring == "1KA..06865" ~ NA_real_,
+                Ring == "1KA..17153" ~ NA_real_,
+                Ring == "1KA..46368" ~ NA_real_,
+                Ring == "1KA..91139" ~ NA_real_,
+                Ring == "1KA00898" ~ 1,
+                Ring == "1KA00914" ~ 1,
+                Ring == "1KA00935" ~ 2,
+                Ring == "1KA00937" ~ 2,
+                Ring == "1KA00945" ~ 2,
+                Ring == "1KA00951" ~ 1,
+                Ring == "1KA06839" ~ 2,
+                Ring == "1KA06865" ~ NA_real_,
+                Ring == "1KA95159" ~ 1,
+                Ring == "1KA97611" ~ 1,
+                Ring == "1L00993" ~ NA_real_,
+                Ring == "1L03751" ~ 1,
+                Ring == "1L03828" ~ 2,
+                Ring == "1L52227" ~ 2,
+                Ring == "1N01218" ~ 1,
+                Ring == "1N01219" ~ 2,
+                Ring == "1N46005" ~ 1,
+                Ring == "1Y...12787" ~ NA_real_,
+                Ring == "1Y63037" ~ 2,
+                Ring == "1Y63048" ~ 2,
+                Ring == "1Y63070" ~ 1,
+                Ring == "1Y63246" ~ 2,
+                Ring == "1Y89828" ~ 1,
+                Ring == "1Z...65288" ~ 2,
+                Ring == "1Z65225" ~ 1,
+                Ring == "1Z65258" ~ 2,
+                Ring == "1Z65279" ~ 1,
+                Ring == "1Z65288" ~ 2,
+                Ring == "1Z78059" ~ 2,
+                Ring == "2A..274066" ~ NA_real_,
+                Ring == "2A050546" ~ NA_real_,
+                Ring == "2A058322" ~ 2,
+                Ring == "2A058357" ~ 2,
+                Ring == "2A058710" ~ 2,
+                Ring == "2A112116" ~ 2,
+                Ring == "2A112151" ~ 1,
+                Ring == "2A273798" ~ 1,
+                Ring == "2A274066" ~ 2,
+                Ring == "2A331020" ~ NA_real_,
+                Ring == "2A354753" ~ 2,
+                Ring == "2A417985" ~ 2,
+                Ring == "2L22231" ~ 1,
+                Ring == "2N54823" ~ 2,
+                Ring == "2N91279" ~ 2,
+                Ring == "2Y24412" ~ 2,
+                Ring == "2Z23127" ~ 2,
+                Ring == "A03327" ~ NA_real_,
+                Ring == "BC02101" ~ 1,
+                Ring == "BC02796" ~ 2,
+                Ring == "BC04257" ~ 2,
+                Ring == "BU4321" ~ 1,
+                Ring == "CJ1592" ~ 1,
+                Ring == "CJ1642" ~ 2,
+                Ring == "CJ1679" ~ 1,
+                Ring == "CJ1745" ~ 1,
+                Ring == "CP3453" ~ 1,
+                Ring == "CP3455" ~ 2,
+                Ring == "CP3471" ~ 2,
+                Ring == "CP3503" ~ 1,
+                Ring == "CP8828" ~ 1,
+                Ring == "CP8875" ~ 2,
+                Ring == "CP8876" ~ 2,
+                Ring == "CP8878" ~ 2,
+                Ring == "CP8880" ~ 2,
+                Ring == "CP8881" ~ 1,
+                Ring == "CP8882" ~ 2,
+                Ring == "CP8883" ~ 2,
+                Ring == "CP8885" ~ 2,
+                Ring == "CP8886" ~ 1,
+                Ring == "CP8890" ~ 1,
+                Ring == "CY4766" ~ NA_real_,
+                Ring == "DB2889" ~ 1,
+                Ring == "DB2921" ~ 1,
+                Ring == "DB2928" ~ 1,
+                Ring == "DR3515" ~ 2,
+                Ring == "DR3516" ~ 2,
+                Ring == "FP1384" ~ 1,
+                Ring == "FP1385" ~ 2,
+                Ring == "H10943" ~ 1,
+                Ring == "H13183" ~ 2,
+                Ring == "HC4240" ~ NA_real_,
+                Ring == "HC4480" ~ 2,
+                Ring == "HC4701" ~ 2,
+                Ring == "HP2196" ~ 2,
+                Ring == "HP2240" ~ 2,
+                Ring == "J31221" ~ 2,
+                Ring == "J59297" ~ 1,
+                Ring == "J59927" ~ NA_real_,
+                Ring == "J61102" ~ 2,
+                Ring == "J61111" ~ 2,
+                Ring == "J83608" ~ 1,
+                Ring == "J83638" ~ 2,
+                Ring == "J90602" ~ 1,
+                Ring == "K68272" ~ 1,
+                Ring == "K76701" ~ 1,
+                Ring == "K76733" ~ 1,
+                Ring == "K76736" ~ 1,
+                Ring == "K76784" ~ 2,
+                Ring == "KA...52295" ~ 2,
+                Ring == "KE5127" ~ 2,
+                Ring == "L240079" ~ NA_real_,
+                Ring == "L375119" ~ 1,
+                Ring == "L375146" ~ 1,
+                Ring == "L448649" ~ 1,
+                Ring == "L644574" ~ 2,
+                Ring == "L751450" ~ NA_real_,
+                Ring == "L769572" ~ 2,
+                Ring == "L769595" ~ 2,
+                Ring == "L814089" ~ 2,
+                Ring == "L851256" ~ 2,
+                Ring == "L958036" ~ 1,
+                Ring == "M13107" ~ 1,
+                Ring == "M6213" ~ 1,
+                Ring == "M71118" ~ NA_real_,
+                Ring == "M9969" ~ 1,
+                Ring == "n17763" ~ NA_real_,
+                Ring == "n17764" ~ NA_real_,
+                Ring == "n17784" ~ NA_real_,
+                Ring == "N179851" ~ 2,
+                Ring == "n18941" ~ NA_real_,
+                Ring == "N206056" ~ 2,
+                Ring == "N206097" ~ NA_real_,
+                Ring == "N206170" ~ 2,
+                Ring == "N206173" ~ 1,
+                Ring == "N34581" ~ 1,
+                Ring == "N34593" ~ 2,
+                Ring == "N489703" ~ 1,
+                Ring == "N489705" ~ 2,
+                Ring == "N489710" ~ 1,
+                Ring == "N489714" ~ 1,
+                Ring == "N489716" ~ 2,
+                Ring == "N489720" ~ 1,
+                Ring == "N585875" ~ 1,
+                Ring == "N762162" ~ 1,
+                Ring == "N79417" ~ 1,
+                Ring == "N806054" ~ 1,
+                Ring == "N806098" ~ 1,
+                Ring == "N806120" ~ 1,
+                Ring == "N806178" ~ 1,
+                Ring == "N841718" ~ 1,
+                Ring == "N841721" ~ 1,
+                Ring == "N841726" ~ 2,
+                Ring == "N928929" ~ 1,
+                Ring == "N928930" ~ 1,
+                Ring == "N928941" ~ 1,
+                Ring == "N951820" ~ 2,
+                Ring == "N951825" ~ 1,
+                Ring == "P113260" ~ NA_real_,
+                Ring == "R14925" ~ 1,
+                Ring == "RIP" ~ 2,
+                Ring == "T10524" ~ 1,
+                Ring == "V010709" ~ 2,
+                Ring == "V050940" ~ NA_real_,
+                Ring == "Y....57958" ~ 1,
+                Ring == "Y....70257" ~ 2,
+                Ring == "Y59099" ~ 1,
+                Ring == "Y70206" ~ 1,
+                Ring == "Y70256" ~ 1,
+                Ring == "Y70257" ~ 2,
+                TRUE ~ Sex))
+
+```
+
+
+## Delete the outliers 
+
+First we correct the values that are over 300 dividing by 10 :
+
+```{r separator correction, warning=FALSE}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Wing = case_when (Wing >= 1000 ~ Wing/100, 
+                                                                   Wing >= 200 ~ Wing/10,  
+                                                         TRUE ~ Wing))
+
+ggplot(original_data1, aes(x=Wing)) + 
+  geom_histogram()
+
+original_data1 <- original_data1 %>% dplyr::mutate(Tarsus = case_when (Tarsus >= 1000 ~ Tarsus/100, 
+                                                                   Tarsus >= 40 ~ Tarsus/10,  
+                                                       TRUE ~ Tarsus))
+
+ggplot(original_data1, aes(x=Tarsus)) + 
+  geom_histogram()
+
+
+original_data1 <- original_data1 %>% dplyr::mutate(Weight = case_when (
+                                                                      (Species== "Sylvia atricapilla" | Species== "Phylloscopus collybita" | Species== "Sylvia borin" | Species == "Carduelis carduelis" | Species == "Serinus serinus"| Species == "Ficedula hypoleuca" | Species == "Curruca melanocephala" | Species == "Cettia cetti" | Species == "Sylvia communis"| Species == "Erithacus rubecula" | Species == "Chloris chloris"| Species == "Parus major") & (Weight >= 1000) ~ Weight/100,
+                                                                       (Species== "Sylvia atricapilla" | Species== "Phylloscopus collybita" | Species== "Sylvia borin" | Species == "Carduelis carduelis" | Species == "Serinus serinus"| Species == "Ficedula hypoleuca" | Species == "Curruca melanocephala" | Species == "Cettia cetti" | Species == "Sylvia communis"| Species == "Erithacus rubecula" | Species == "Chloris chloris"| Species == "Parus major") & (Weight >= 120) ~ Weight/10,
+                                                                        (Species== "Turdus merula" | Species== "Turdus philomelos") & (Weight >= 1000) ~ Weight/10,
+                                                       TRUE ~ Weight))
+
+original_data1 <- original_data1 %>% dplyr::mutate(Weight = case_when ((Species== "Sylvia atricapilla" | Species== "Phylloscopus collybita" | Species== "Sylvia borin" | Species == "Carduelis carduelis" | Species == "Serinus serinus"| Species == "Ficedula hypoleuca" | Species == "Curruca melanocephala" | Species == "Cettia cetti" | Species == "Sylvia communis"| Species == "Erithacus rubecula" | Species == "Chloris chloris"| Species == "Parus major") & (Weight >= 33) ~ Weight/10, 
+                                                       TRUE ~ Weight))
+
+ggplot(original_data1, aes(x=Weight)) + 
+  geom_histogram()
+
+```
+
+
+
+We filter by the outliers for the wing:
+
+The thresholds have been determinated by visual inspection:
+
+```{r outliers filter wing }
+original_data1 <- original_data1 %>% dplyr::mutate(Wing = case_when ( 
+                        Species == "Sylvia atricapilla" & (Wing < 63 | Wing > 84) ~ NA_real_,
+                        Species == "Phylloscopus collybita" & (Wing < 48 | Wing > 68) ~ NA_real_,
+                        Species == "Sylvia borin" & (Wing < 70 | Wing > 87) ~ NA_real_,
+                        Species == "Erithacus rubecula" & (Wing < 64 | Wing > 80) ~ NA_real_,
+                        Species == "Chloris chloris" & (Wing < 75 | Wing > 92) ~ NA_real_,
+                        Species == "Ficedula hypoleuca" & (Wing < 74 | Wing > 90) ~ NA_real_,
+                        Species == "Carduelis carduelis" & (Wing < 67 | Wing > 82) ~ NA_real_,
+                        Species == "Turdus merula" & (Wing < 110 | Wing > 135) ~ NA_real_,
+                        Species == "Curruca melanocephala" & (Wing < 52 | Wing > 66) ~ NA_real_,
+                        Species == "Turdus philomelos" & (Wing < 110 | Wing > 126) ~ NA_real_,
+                        Species == "Sylvia communis" & (Wing < 60 | Wing > 85) ~ NA_real_,
+                        Species == "Parus major" & (Wing < 63 | Wing > 84) ~ NA_real_,
+                        Species == "Cettia cetti" & (Wing < 49 | Wing > 69) ~ NA_real_,
+                        Species == "Serinus serinus" & (Wing < 64 | Wing > 78) ~ NA_real_,
+                        Species == "Fringilla coelebs" & (Wing < 77 | Wing > 92) ~ NA_real_,
+                        TRUE ~ Wing ))
+
+
+
+```
+
+The tarsus:
+
+```{r outliers filter tarsus, warning =  FALSE}
+original_data1 <- original_data1 %>% dplyr::mutate(Tarsus = case_when ( 
+                          Species == "Sylvia atricapilla" & (Tarsus < 17.5 | Tarsus > 23.5) ~ NA_real_,
+                          Species == "Phylloscopus collybita" & (Tarsus < 16.8 | Tarsus > 22) ~ NA_real_,
+                          Species == "Sylvia borin" & (Tarsus < 17.6 | Tarsus > 22.7) ~ NA_real_,
+                          Species == "Erithacus rubecula" & (Tarsus < 22 | Tarsus > 27.9) ~ NA_real_,
+                          Species == "Chloris chloris" & (Tarsus < 14 | Tarsus > 20.2) ~ NA_real_,
+                          Species == "Ficedula hypoleuca" & (Tarsus < 15 | Tarsus > 20) ~ NA_real_,
+                          Species == "Carduelis carduelis" & (Tarsus < 13 | Tarsus > 16.5) ~ NA_real_,
+                          Species == "Turdus merula" & (Tarsus < 30 | Tarsus > 38) ~ NA_real_,
+                          Species == "Curruca melanocephala" & (Tarsus < 17 | Tarsus > 22) ~ NA_real_,
+                          Species == "Turdus philomelos" & (Tarsus < 29 | Tarsus > 36) ~ NA_real_,
+                          Species == "Sylvia communis" & (Tarsus < 19 | Tarsus > 25) ~ NA_real_,
+                          Species == "Parus major" & (Tarsus < 16 | Tarsus > 23.5) ~ NA_real_,
+                          Species == "Cettia cetti" & (Tarsus < 18 | Tarsus > 22) ~ NA_real_,
+                          Species == "Serinus serinus" & (Tarsus < 12 | Tarsus > 15.5) ~ NA_real_,
+                          Species == "Fringilla coelebs" & (Tarsus < 16 | Tarsus > 20) ~ NA_real_,
+                          TRUE ~ Tarsus))
+
+
+```
+
+And the weight:
+
+```{r Weight outliers, warning= FALSE}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Weight = case_when ( 
+                        Species == "Sylvia atricapilla" & (Weight < 13 | Weight > 28) ~ NA_real_,
+                        Species == "Phylloscopus collybita" & (Weight < 4.9 | Weight > 13) ~ NA_real_,
+                        Species == "Sylvia borin" & (Weight < 10 | Weight > 33) ~ NA_real_,
+                        Species == "Erithacus rubecula" & (Weight < 10 | Weight > 23) ~ NA_real_,
+                        Species == "Chloris chloris" & (Weight < 12 | Weight > 32) ~ NA_real_,
+                        Species == "Ficedula hypoleuca" & (Weight < 7.5 | Weight > 19.5) ~ NA_real_,
+                        Species == "Carduelis carduelis" & (Weight < 10 | Weight > 18.5) ~ NA_real_,
+                        Species == "Turdus merula" & (Weight < 65 | Weight > 109) ~ NA_real_,
+                        Species == "Curruca melanocephala" & (Weight < 8 | Weight > 15) ~ NA_real_,
+                        Species == "Turdus philomelos" & (Weight < 50 | Weight > 100) ~ NA_real_,
+                        Species == "Sylvia communis" & (Weight < 11 | Weight > 23.5) ~ NA_real_,
+                        Species == "Parus major" & (Weight < 12 | Weight > 27) ~ NA_real_,
+                        Species == "Cettia cetti" & (Weight < 8 | Weight > 17) ~ NA_real_,
+                        Species == "Serinus serinus" & (Weight < 8.5 | Weight > 13.6) ~ NA_real_,
+                        Species == "Fringilla coelebs" & (Weight < 15.5 | Weight > 24.5) ~ NA_real_,
+                        TRUE ~ Weight))
+
+
+```
+
+We filter the obs that don't have Date:
+
+
+```{r filter the missing values}
+
+original_data1 <- original_data1 %>% filter(!is.na(Year))
+
+```
+
+
+As we can see in the histogram, this species has a bimodal distribution for the wing lenght, it means that we must to plot this measurement by Sex. Gordo et al. 2018 developed a guide to agein and Sexing this species, so we follow the steps:
+
+```{r Sexing PHYCOL}
+
+Phylloscopus_collybita <- original_data1 %>% filter(Species== "Phylloscopus collybita")
+original_data1 <- original_data1 %>% filter(!Species == "Phylloscopus collybita")
+
+Phylloscopus_collybita<- subset(Phylloscopus_collybita, select = -(Sex))
+
+#Paso 3
+WL_gr <- mixgroup(Phylloscopus_collybita$Wing, 
+                  breaks = seq(min(Phylloscopus_collybita$Wing, na.rm=T), max(Phylloscopus_collybita$Wing, na.rm=T), 0.5)) 
+plot(WL_gr)
+#Paso 4
+WL_par <- mixparam(mu= c(55,62), sigma = c(1,1)) 
+#Paso 5
+WL_fit <- mix(WL_gr, WL_par, dist = "lnorm", emsteps = 5) 
+#Paso 6
+summary(WL_fit) 
+plot(WL_fit) 
+#Paso 7
+TR_gr <- mixgroup(Phylloscopus_collybita$Tarsus, breaks = seq(min(Phylloscopus_collybita$Tarsus, na.rm=T), max(Phylloscopus_collybita$Tarsus, na.rm=T), 0.1)) 
+plot(TR_gr)
+WL <- coef(WL_fit) 
+WL_fem_up_SD <- WL[1,2] + WL[1,3] 
+WL_fem_low_SD <- WL[1,2] - WL[1,3] 
+WL_male_up_SD <- WL[2,2] + WL[2,3] 
+WL_male_low_SD <- WL[2,2] - WL[2,3] 
+TR_male <- mean(Phylloscopus_collybita$Tarsus[WL_male_up_SD>Phylloscopus_collybita$Wing & Phylloscopus_collybita$Wing>WL_male_low_SD], na.rm=T) 
+TR_fem  <- mean(Phylloscopus_collybita$Tarsus[WL_fem_up_SD>Phylloscopus_collybita$Wing & Phylloscopus_collybita$Wing>WL_fem_low_SD], na.rm=T) 
+TR_par <- mixparam(c(TR_fem,TR_male), c(1,1), c(WL[1,1],WL[2,1]))  
+TR_fit <- mix(TR_gr, TR_par, dist = "norm", emsteps = 5, constr = mixconstr(conpi = "PFX", fixpi=c(TRUE,TRUE), conmu="MFX", 
+fixmu=c(TRUE,TRUE)))
+#Paso 8 
+summary(TR_fit) 
+plot(TR_fit) 
+#Paso 9
+TR <- coef(TR_fit) 
+prob_WL_f <- pnorm(Phylloscopus_collybita$Wing, WL[1,2], WL[1,3], lower.tail=F) 
+prob_WL_m <- pnorm(Phylloscopus_collybita$Wing, WL[2,2], WL[2,3]) 
+prob_TR_f <- pnorm(Phylloscopus_collybita$Tarsus, TR[1,2], TR[1,3], lower.tail=F) 
+prob_TR_m <- pnorm(Phylloscopus_collybita$Tarsus, TR[2,2], TR[2,3]) 
+#Paso 10
+probs <- cbind(prob_WL_f, prob_WL_m, prob_TR_f, prob_TR_m) 
+probs[is.na(probs)] <- 1 
+prob_f <- probs[,1] * probs[,3] 
+prob_m <- probs[,2] * probs[,4] 
+n <- length(Phylloscopus_collybita$Ring) 
+Sex <- matrix(NA, n, 1) 
+for (i in 1:n) { 
+    if (prob_f[i]<1/(n*WL[1,1]) & prob_m[i]<1/(n*WL[2,1])) {Sex[i]=0} 
+    else if (prob_f[i]*20<prob_m[i]) {Sex[i]=1} 
+    else if (prob_m[i]*20<prob_f[i]) {Sex[i]=2} 
+    else {Sex[i]=0} 
+}
+low_q_WL <- qnorm(1/(n*WL[1,1]), WL[1,2], WL[1,3]) 
+Sex[Phylloscopus_collybita$Wing<low_q_WL] <- 0 
+up_q_WL <- qnorm(1/(n*WL[2,1]), WL[2,2], WL[2,3], lower.tail=F) 
+Sex[Phylloscopus_collybita$Wing>up_q_WL] <- 0 
+low_q_TR <- qnorm(1/(n*WL[1,1]), TR[1,2], TR[1,3]) 
+Sex[Phylloscopus_collybita$Tarsus<low_q_TR] <- 0 
+up_q_TR <- qnorm(1/(n*WL[2,1]), TR[2,2], TR[2,3], lower.tail=F) 
+Sex[Phylloscopus_collybita$Tarsus>up_q_TR] <- 0 
+
+Phylloscopus_collybita <- cbind(Phylloscopus_collybita, Sex)
+
+original_data1 <-  rbind(original_data1,Phylloscopus_collybita)
+                        
+
+
+#write.table(datos_Sexado, "datos_Sexado.txt", sep="\t", row.names=F, quote=F) 
+
+```
+
+Cettia cetti sex asignation:
+
+```{r CETCET sex}
+
+original_data1 <- original_data1 %>% dplyr::mutate(Sex = case_when ( 
+                          Species == "Cettia cetti" & Wing >=57 ~ 1,
+                            Species == "Cettia cetti" & Wing <= 56 ~ 2,
+                                                         TRUE ~ Sex))
+
+```
+
+Write a final CSV:
+
+```{r final csv, warning= FALSE}
+
+
+write_excel_csv(original_data1, file = "final_data.csv") 
+
+
+```
+
+
